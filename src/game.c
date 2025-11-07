@@ -59,7 +59,7 @@ void Game_Update(void) {
         // 🎯 LANES INFINITAS - TESTE SIMPLES: gera nova lane a cada 2 pontos
         static int lastScore = 0;
         if (player.score > lastScore && player.score % 2 == 0) {
-            World_AddLaneOnTop(&world, SCREEN_W, SCREEN_H);
+            //World_AddLaneOnTop(&world, SCREEN_W, SCREEN_H);
             lastScore = player.score;
             printf("🎯 Score: %d - Gerando nova lane!\n", player.score);
         }
