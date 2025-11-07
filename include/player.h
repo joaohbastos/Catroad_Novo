@@ -11,7 +11,7 @@ typedef struct {
 } Player;
 
 void Player_Init(Player *p, Vector2 startPos, float size);
-void Player_Update(Player *p, float dt, float tile, int maxRows, int screenW, int screenH);
+void Player_Update(Player *p, float dt, float tile, int screenW, int screenH);
 void Player_Draw(const Player *p, Vector2 cameraOffset);
 
 #endif

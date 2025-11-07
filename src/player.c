@@ -9,7 +9,7 @@ void Player_Init(Player *p, Vector2 startPos, float size) {
     p->moveCd = 0.0f;
 }
 
-void Player_Update(Player *p, float dt, float tile, int maxRows, int screenW, int screenH) {
+void Player_Update(Player *p, float dt, float tile, int screenW, int screenH) {
     if (p->moveCd > 0.0f) p->moveCd -= dt;
 
     Vector2 delta = {0};
@@ -40,11 +40,10 @@ void Player_Update(Player *p, float dt, float tile, int maxRows, int screenW, in
                 if (delta.y < 0) { // subiu uma linha
                     p->row += 1;
                     
-                    // 🎯 PONTUAÇÃO CORRIGIDA - conta cada linha subida
+                    // 🎯 PONTUAÇÃO - conta cada linha subida
                     if (p->row > p->maxRow) {
                         p->maxRow = p->row;
                     }
-                    // A pontuação é simplesmente a linha atual
                     p->score = p->row;
                     
                     printf("⬆️ Player subiu para linha %d | Pontuação: %d\n", p->row, p->score);
@@ -54,12 +53,12 @@ void Player_Update(Player *p, float dt, float tile, int maxRows, int screenW, in
         }
     }
 
+    // Limites da tela apenas horizontais
     if (p->box.x < 0) p->box.x = 0;
     if (p->box.x + p->box.width > screenW) p->box.x = screenW - p->box.width;
+    
+    // Limite vertical inferior apenas (para não cair da tela)
     if (p->box.y + p->box.height > screenH) p->box.y = screenH - p->box.height;
-
-    // Remove o limite máximo de linhas para lanes infinitas
-    // if (p->row > maxRows) p->row = maxRows;
 }
 
 void Player_Draw(const Player *p, Vector2 cameraOffset) {
