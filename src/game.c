@@ -56,15 +56,15 @@ void Game_Update(void) {
         }
         if (cameraOffset.y > 0) cameraOffset.y = 0;
 
-        // 🎯 LANES INFINITAS - VERSÃO QUE FUNCIONA!
-        static int lastRow = -1;
-        if (player.row != lastRow) {
-            // Gera nova lane quando o player sobe além das lanes iniciais
-            if (player.row >= 8) {
-                World_AddLaneOnTop(&world, SCREEN_W, SCREEN_H);
-                printf("🛣️ Player na linha %d - Nova lane gerada!\n", player.row);
-            }
-            lastRow = player.row;
+        // 🎯 LANES INFINITAS - GERAR NA FRENTE DO PLAYER!
+        // Calcula quantas lanes faltam acima do player
+        int lanesAbovePlayer = (player.box.y - cameraOffset.y) / TILE;
+        
+        // Se faltam menos de 4 lanes acima, gera novas
+        if (lanesAbovePlayer < 4) {
+            World_AddLaneOnTop(&world, SCREEN_W, SCREEN_H);
+            printf("🛣️ Gerando lane! Lanes acima: %d | PlayerY: %.0f\n", 
+                   lanesAbovePlayer, player.box.y);
         }
 
         // checa colisão ou fim do tempo
