@@ -30,7 +30,6 @@ void World_Init(World *w, int screenW, int screenH, float tile);
 void World_Update(World *w, float dt, int screenW);
 void World_Draw(const World *w, Vector2 cameraOffset);
 bool World_CheckCollision(const World *w, Rectangle player);
-void World_AddLaneOnTop(World *w, int screenW, int screenH);  // ← NOME CORRIGIDO
-void World_RemoveBottomLane(World *w);
+void World_AddLaneOnTop(World *w, int screenW, int screenH);
 
 #endif
