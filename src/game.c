@@ -16,7 +16,6 @@ static Player player;
 static World world;
 static GameTimer timer35;
 static GameState state;
-static int rowsPlayable = MAX_LANES - 1;
 
 // 🎥 SISTEMA DE CÂMERA
 static Vector2 cameraOffset = {0, 0};
@@ -48,31 +47,31 @@ void Game_Update(void) {
     if (state == STATE_PLAYING) {
         Timer_Update(&timer35, dt);
         World_Update(&world, dt, SCREEN_W);
-        Player_Update(&player, dt, TILE, rowsPlayable, SCREEN_W, SCREEN_H);
+        Player_Update(&player, dt, TILE, SCREEN_W, SCREEN_H);
 
-        // 🎥 CÂMERA
+        // 🎥 CÂMERA - Acompanha o player quando sobe
         if (player.box.y < 300.0f) {
             cameraOffset.y = player.box.y - 300.0f;
         }
         if (cameraOffset.y > 0) cameraOffset.y = 0;
 
-        // 🎯 LANES INFINITAS - GERA SEMPRE QUE O PLAYER SOBE
-    static float lastPlayerY = -1;
-    if (player.box.y != lastPlayerY) {
-        // Gera nova lane quando o player sobe além de uma certa altura
-        if (player.box.y < 200.0f) { // Quando player está alto na tela
-            World_AddLaneOnTop(&world, SCREEN_W, SCREEN_H);
-            printf("🎯 Player subiu! Y=%.0f - Gerando lane acima!\n", player.box.y);
+        // 🎯 LANES INFINITAS - Gera quando player está no topo da tela
+        static float lastPlayerY = -1;
+        if (player.box.y != lastPlayerY) {
+            // Gera nova lane quando o player está alto na tela
+            if (player.box.y < 200.0f) {
+                World_AddLaneOnTop(&world, SCREEN_W, SCREEN_H);
+                printf("🎯 Player subiu! Y=%.0f - Gerando lane acima!\n", player.box.y);
+            }
+            lastPlayerY = player.box.y;
         }
-        lastPlayerY = player.box.y;
-    }
 
-        // checa colisão ou fim do tempo
+        // Checa colisão ou fim do tempo
         if (World_CheckCollision(&world, player.box) || Timer_IsOver(&timer35)) {
             state = STATE_GAMEOVER;
         }
 
-        // restart rápido
+        // Restart rápido
         if (IsKeyPressed(KEY_R)) {
             ResetGame();
         }

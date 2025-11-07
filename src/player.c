@@ -37,12 +37,17 @@ void Player_Update(Player *p, float dt, float tile, int maxRows, int screenW, in
             p->box.x += delta.x;
             if (movedRow) {
                 p->box.y += delta.y;
-                if (delta.y < 0) {
+                if (delta.y < 0) { // subiu uma linha
                     p->row += 1;
+                    
+                    // 🎯 PONTUAÇÃO CORRIGIDA - conta cada linha subida
                     if (p->row > p->maxRow) {
                         p->maxRow = p->row;
-                        p->score = p->maxRow;
                     }
+                    // A pontuação é simplesmente a linha atual
+                    p->score = p->row;
+                    
+                    printf("⬆️ Player subiu para linha %d | Pontuação: %d\n", p->row, p->score);
                 }
             }
             p->moveCd = 0.12f;
@@ -53,7 +58,8 @@ void Player_Update(Player *p, float dt, float tile, int maxRows, int screenW, in
     if (p->box.x + p->box.width > screenW) p->box.x = screenW - p->box.width;
     if (p->box.y + p->box.height > screenH) p->box.y = screenH - p->box.height;
 
-    if (p->row > maxRows) p->row = maxRows;
+    // Remove o limite máximo de linhas para lanes infinitas
+    // if (p->row > maxRows) p->row = maxRows;
 }
 
 void Player_Draw(const Player *p, Vector2 cameraOffset) {
