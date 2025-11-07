@@ -52,9 +52,9 @@ void Game_Update(void) {
 
         // 🎥 CÂMERA QUE FUNCIONAVA - VERSÃO SIMPLES
         if (player.box.y < 300.0f) {
-            cameraOffset.y = 300.0f - player.box.y;
+            cameraOffset.y = player.box.y - 300.0f;
         }
-        if (cameraOffset.y < 0) cameraOffset.y = 0;
+        if (cameraOffset.y > 0) cameraOffset.y = 0;
 
         // 🎯 (OPCIONAL) LANES INFINITAS - descomente depois que a câmera estiver funcionando
         // float topLaneY = world.lanes[0].y - cameraOffset.y;
