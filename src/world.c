@@ -1,7 +1,7 @@
 #include "world.h"
 #include "raylib.h"
 #include <stdio.h>
-#include <stdlib.h>  // Para rand()
+#include <stdlib.h>
 
 void World_Init(World *world, int screenWidth, int screenHeight, float tileSize) {
     world->tileSize = tileSize;
@@ -28,16 +28,16 @@ void World_Init(World *world, int screenWidth, int screenHeight, float tileSize)
             if (lane.hasCar) {
                 // 🔥 ALEATORIEDADE: Direção aleatória
                 if (GetRandomValue(0, 1) == 0) {
-                    lane.carX = -tileSize * GetRandomValue(2, 4);  // Posição inicial aleatória
-                    lane.carSpeed = GetRandomValue(120, 220);      // Velocidade aleatória
+                    lane.carX = -tileSize * GetRandomValue(2, 4);
+                    lane.carSpeed = GetRandomValue(120, 220);
                 } else {
                     lane.carX = screenWidth + tileSize * GetRandomValue(2, 4);
-                    lane.carSpeed = -GetRandomValue(120, 220);     // Velocidade negativa
+                    lane.carSpeed = -GetRandomValue(120, 220);
                 }
                 
                 // 🔥 ALEATORIEDADE: Quantidade de carros (1-3 carros por lane)
                 lane.carCount = GetRandomValue(1, 3);
-                lane.carSpacing = GetRandomValue(200, 400);  // Espaçamento entre carros
+                lane.carSpacing = GetRandomValue(200, 400);
             } else {
                 lane.carCount = 0;
                 lane.carSpeed = 0;
@@ -80,11 +80,6 @@ void World_Update(World *world, float dt, int screenWidth) {
 
 void World_Draw(const World *world, Vector2 cameraOffset) {
     int screenWidth = 800;
-    
-    // 🔥 PONTO AMARELO PISCANDO
-    static float blinkTimer = 0;
-    blinkTimer += GetFrameTime();
-    bool showYellowDot = ((int)(blinkTimer * 2) % 2) == 0;  // Pisca a cada 0.5 segundos
     
     for (int i = 0; i < world->laneCount; i++) {
         const Lane *lane = &world->lanes[i];
@@ -139,19 +134,11 @@ void World_Draw(const World *world, Vector2 cameraOffset) {
                 }
             }
         } else {
-            // 🔥 PONTOS AMARELOS PISCANDO NA GRAMA
-            if (showYellowDot) {
-                for (int x = 20; x < screenWidth; x += 60) {
-                    if (GetRandomValue(0, 100) > 80) {  // 20% de chance de ter ponto
-                        DrawCircle(x, drawRect.y + drawRect.height/2, 3, YELLOW);
-                    }
-                }
-            }
-            
-            // Graminha adicional (sempre visível)
+            // 🔥 REMOVIDO: pontos amarelos piscando
+            // 🔥 APENAS graminha simples (opcional)
             for (int x = 30; x < screenWidth; x += 90) {
                 if (GetRandomValue(0, 100) > 60) {
-                    DrawRectangle(x, drawRect.y + drawRect.height - 8, 2, 8, (Color){40, 120, 40, 255});
+                    DrawRectangle(x, drawRect.y + drawRect.height - 6, 2, 6, (Color){40, 120, 40, 255});
                 }
             }
         }
