@@ -53,11 +53,11 @@ void Player_Update(Player *p, float dt, float tile, int screenW, int screenH) {
         }
     }
 
-    // Limites da tela apenas horizontais
+    // Limites da tela
     if (p->box.x < 0) p->box.x = 0;
     if (p->box.x + p->box.width > screenW) p->box.x = screenW - p->box.width;
     
-    // Limite vertical inferior apenas (para não cair da tela)
+    // Limite vertical inferior apenas
     if (p->box.y + p->box.height > screenH) p->box.y = screenH - p->box.height;
 }
 
