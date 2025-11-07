@@ -50,12 +50,19 @@ void Game_Update(void) {
         World_Update(&world, dt, SCREEN_W);
         Player_Update(&player, dt, TILE, rowsPlayable, SCREEN_W, SCREEN_H);
 
-        // 🎥 CÂMERA SIMPLES E FUNCIONAL
+        // 🎥 CÂMERA
         float playerScreenY = player.box.y - cameraOffset.y;
-        if (player.box.y < 300.0f && cameraOffset.y < player.box.y){
-            cameraOffset.y = player.box.y - 300.0f;
+        if (playerScreenY < 200.0f) {
+            cameraOffset.y += (200.0f - playerScreenY) * 5.0f * dt;
         }
-        if (cameraOffset.y > 0) cameraOffset.y = 0;
+        if (cameraOffset.y < 0) cameraOffset.y = 0;
+
+        // 🎯 LANES INFINITAS - quando player chega perto do topo
+        float topLaneY = world.lanes[0].y - cameraOffset.y;
+        if (topLaneY > SCREEN_H * 0.2f) { // Quando a lane do topo está muito baixa
+            World_AddLane(&world, SCREEN_W, SCREEN_H);
+            printf("Nova lane adicionada! Total: %d\n", world.laneCount);
+        }
 
         // checa colisão ou fim do tempo
         if (World_CheckCollision(&world, player.box) || Timer_IsOver(&timer35)) {

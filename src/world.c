@@ -98,3 +98,51 @@ bool World_CheckCollision(const World *w, Rectangle player) {
     }
     return false;
 }
+
+void World_AddLane(World *w, int screenW, int screenH) {
+    // Move todas as lanes para baixo
+    for (int i = 0; i < w->laneCount; i++) {
+        w->lanes[i].y += (int)w->tile;
+        
+        // Move os carros também
+        if (w->lanes[i].isRoad) {
+            for (int c = 0; c < w->lanes[i].carCount; c++) {
+                w->lanes[i].cars[c].box.y += w->tile;
+            }
+        }
+    }
+    
+    // Cria nova lane no topo
+    Lane *newLane = &w->lanes[0];
+    newLane->y = screenH - (int)(w->laneCount * w->tile);
+    newLane->isRoad = (GetRandomValue(0, 1) == 1); // 50% chance de ser rua
+    
+    if (newLane->isRoad) {
+        int cars = 2 + GetRandomValue(0, 2);
+        if (cars > MAX_CARS_PER_LANE) cars = MAX_CARS_PER_LANE;
+        newLane->carCount = cars;
+        
+        int dir = (GetRandomValue(0, 1) == 0) ? -1 : +1;
+        float speedBase = randf(90.0f, 160.0f);
+        
+        for (int c = 0; c < cars; c++) {
+            float wcar = w->tile * randf(1.2f, 1.8f);
+            float hcar = w->tile * 0.8f;
+            float x = (float)GetRandomValue(-screenW, screenW);
+            
+            newLane->cars[c].box = (Rectangle){ x, (float)newLane->y + (w->tile - hcar)*0.5f, wcar, hcar };
+            newLane->cars[c].speed = speedBase * randf(0.9f, 1.2f);
+            newLane->cars[c].dir = dir;
+            newLane->cars[c].active = true;
+        }
+    } else {
+        newLane->carCount = 0;
+    }
+}
+
+void World_RemoveBottomLane(World *w) {
+    // Remove a lane mais de baixo (última)
+    // Como estamos usando array fixo, só resetamos
+    Lane *bottomLane = &w->lanes[w->laneCount - 1];
+    bottomLane->carCount = 0;
+}
