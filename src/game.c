@@ -56,12 +56,13 @@ void Game_Update(void) {
         }
         if (cameraOffset.y > 0) cameraOffset.y = 0;
 
-        // 🎯 LANES INFINITAS - gera nova lane quando player está perto do topo
-    float playerDistanceToTop = (world.lanes[0].y - cameraOffset.y) - player.box.y;
-    if (playerDistanceToTop < 200.0f) { // Quando faltam 200px para chegar no topo
-        World_AddLaneOnTop(&world, SCREEN_W, SCREEN_H);
-    }
-        
+        // 🎯 LANES INFINITAS - TESTE SIMPLES: gera nova lane a cada 2 pontos
+        static int lastScore = 0;
+        if (player.score > lastScore && player.score % 2 == 0) {
+            World_AddLaneOnTop(&world, SCREEN_W, SCREEN_H);
+            lastScore = player.score;
+            printf("🎯 Score: %d - Gerando nova lane!\n", player.score);
+        }
 
         // checa colisão ou fim do tempo
         if (World_CheckCollision(&world, player.box) || Timer_IsOver(&timer35)) {
@@ -78,6 +79,7 @@ void Game_Update(void) {
         }
     }
 }
+
 void Game_Draw(void) {
     BeginDrawing();
     ClearBackground((Color){ 30, 30, 40, 255 });
