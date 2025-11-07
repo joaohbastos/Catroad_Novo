@@ -54,8 +54,8 @@ void World_Update(World *world, float dt, int screenWidth) {
             // Atualizar posição do carro
             lane->carX += lane->carSpeed * dt;
             
-            // Fazer o carro reaparecer do outro lado
-            if (lane->carSpeed > 0 && lane->carX > screenWidth + tileSize * 2) {
+            // 🔥 CORRIGIDO: usar world->tileSize em vez de tileSize
+            if (lane->carSpeed > 0 && lane->carX > screenWidth + world->tileSize * 2) {
                 lane->carX = -world->tileSize * 3;
             } else if (lane->carSpeed < 0 && lane->carX < -world->tileSize * 3) {
                 lane->carX = screenWidth + world->tileSize * 2;
@@ -65,6 +65,10 @@ void World_Update(World *world, float dt, int screenWidth) {
 }
 
 void World_Draw(const World *world, Vector2 cameraOffset) {
+    // 🔥 CORRIGIDO: usar SCREEN_W ou passar como parâmetro
+    // Vamos usar 800 como padrão (igual ao game.c)
+    int screenWidth = 800;
+    
     for (int i = 0; i < world->laneCount; i++) {
         const Lane *lane = &world->lanes[i];
         

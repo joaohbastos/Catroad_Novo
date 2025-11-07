@@ -1,5 +1,6 @@
 #include "player.h"
 #include "raylib.h"
+#include <stdio.h>  // 🔥 ADICIONAR para printf
 
 void Player_Init(Player *p, Vector2 startPos, float size) {
     p->box = (Rectangle){ startPos.x, startPos.y, size, size };
