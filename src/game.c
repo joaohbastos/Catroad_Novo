@@ -1,8 +1,7 @@
-#include "game.h"
+#include "raylib.h"
 #include "player.h"
 #include "world.h"
 #include "timer.h"
-
 #include <stdio.h>
 
 #define SCREEN_W  800
@@ -16,8 +15,6 @@ static Player player;
 static World world;
 static GameTimer timer35;
 static GameState state;
-
-// 🎥 SISTEMA DE CÂMERA
 static Vector2 cameraOffset = {0, 0};
 
 static void ResetGame(void) {
@@ -26,19 +23,20 @@ static void ResetGame(void) {
     Timer_Reset(&timer35, TOTAL_TIME);
     state = STATE_PLAYING;
     cameraOffset = (Vector2){0, 0};
+    printf("🔄 Jogo reiniciado\n");
 }
 
 void Game_Init(void) {
     InitWindow(SCREEN_W, SCREEN_H, "CatRoad - raylib");
     SetTargetFPS(60);
-    InitAudioDevice();
-    SetRandomSeed(GetTime());
-
-    World_Init(&world, SCREEN_W, SCREEN_H, TILE);
-    Player_Init(&player, (Vector2){ SCREEN_W*0.5f - TILE*0.5f, SCREEN_H - TILE }, TILE);
-    Timer_Start(&timer35, TOTAL_TIME);
-    state = STATE_PLAYING;
-    cameraOffset = (Vector2){0, 0};
+    
+    // Tenta inicializar áudio, mas não quebra se falhar
+    if (!IsAudioDeviceReady()) {
+        InitAudioDevice();
+    }
+    
+    SetRandomSeed((unsigned int)GetTime());
+    ResetGame();
 }
 
 void Game_Update(void) {
@@ -47,25 +45,20 @@ void Game_Update(void) {
     if (state == STATE_PLAYING) {
         Timer_Update(&timer35, dt);
         World_Update(&world, dt, SCREEN_W);
-        
-        // ✅ CHAMADA CORRIGIDA
         Player_Update(&player, dt, TILE, SCREEN_W, SCREEN_H);
 
-        // 🎥 CÂMERA - Acompanha o player quando sobe
+        // Câmera
         if (player.box.y < 300.0f) {
             cameraOffset.y = player.box.y - 300.0f;
         }
         if (cameraOffset.y > 0) cameraOffset.y = 0;
 
-        // ❌ REMOVIDO o sistema automático de lanes que estava dando problema
-        // O mundo já deve ter lanes suficientes pré-criadas no World_Init
-
-        // Checa colisão ou fim do tempo
+        // Colisão ou tempo
         if (World_CheckCollision(&world, player.box) || Timer_IsOver(&timer35)) {
             state = STATE_GAMEOVER;
         }
 
-        // Restart rápido
+        // Restart
         if (IsKeyPressed(KEY_R)) {
             ResetGame();
         }
@@ -91,12 +84,14 @@ void Game_Draw(void) {
     DrawText(hud, 16, 10, 20, RAYWHITE);
 
     if (state == STATE_GAMEOVER) {
+        DrawRectangle(0, 0, SCREEN_W, SCREEN_H, (Color){0, 0, 0, 180});
+        
         const char *msg = "Game Over!";
         int fw = MeasureText(msg, 40);
         DrawText(msg, SCREEN_W/2 - fw/2, SCREEN_H/2 - 60, 40, RED);
 
         char sc[128];
-        snprintf(sc, sizeof(sc), "Distancia (linhas): %d", player.score);
+        snprintf(sc, sizeof(sc), "Distancia: %d linhas", player.score);
         int sw = MeasureText(sc, 24);
         DrawText(sc, SCREEN_W/2 - sw/2, SCREEN_H/2 - 16, 24, RAYWHITE);
 
@@ -109,7 +104,9 @@ void Game_Draw(void) {
 }
 
 void Game_Unload(void) {
-    CloseAudioDevice();
+    if (IsAudioDeviceReady()) {
+        CloseAudioDevice();
+    }
     CloseWindow();
 }
 
