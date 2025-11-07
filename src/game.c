@@ -56,13 +56,16 @@ void Game_Update(void) {
         }
         if (cameraOffset.y > 0) cameraOffset.y = 0;
 
-        // 🎯 LANES INFINITAS - AGORA ATIVADO!
-        static int lastScore = 0;
-        if (player.score > lastScore && player.score % 2 == 0) {
-            World_AddLaneOnTop(&world, SCREEN_W, SCREEN_H);
-            lastScore = player.score;
-            printf("🎯 Score: %d - Gerando nova lane!\n", player.score);
-        }
+        // 🎯 LANES INFINITAS - CORRIGIDO
+    static int lastScore = -1;
+    if (player.score != lastScore){
+         World_AddLaneOnTop(&world, SCREEN_W, SCREEN_H);
+        lastScore = player.score;
+        printf("🎯 Score: %d - Lane gerada!\n", player.score);
+    }
+        
+       
+    
 
         // checa colisão ou fim do tempo
         if (World_CheckCollision(&world, player.box) || Timer_IsOver(&timer35)) {

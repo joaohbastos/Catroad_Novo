@@ -35,8 +35,11 @@ void World_Init(World *w, int screenW, int screenH, float tile) {
     }
 }
 
-// 🎯 FUNÇÃO NOVA - GERA LANES INFINITAS
+// 🎯 FUNÇÃO CORRIGIDA - MANTÉM O PADRÃO ORIGINAL
 void World_AddLaneOnTop(World *w, int screenW, int screenH) {
+    // Encontra o padrão da última lane (se é road ou grass)
+    bool lastWasRoad = w->lanes[0].isRoad;
+    
     // Move todas as lanes para baixo
     for (int i = w->laneCount - 1; i > 0; i--) {
         w->lanes[i] = w->lanes[i-1];
@@ -48,10 +51,10 @@ void World_AddLaneOnTop(World *w, int screenW, int screenH) {
         }
     }
     
-    // Cria nova lane no topo
+    // Cria nova lane no topo - ALTERNA entre road e grass
     Lane *newLane = &w->lanes[0];
     newLane->y = (int)(screenH - (w->laneCount * w->tile));
-    newLane->isRoad = (GetRandomValue(0, 1) == 1); // 50% chance de ser estrada
+    newLane->isRoad = !lastWasRoad; // Alterna com a anterior
     newLane->carCount = 0;
     
     if (newLane->isRoad) {
@@ -72,8 +75,9 @@ void World_AddLaneOnTop(World *w, int screenW, int screenH) {
             newLane->cars[c].active = true;
         }
     }
+    
+    printf("🛣️ Nova lane: %s (alternando padrão)\n", newLane->isRoad ? "RUA" : "GRAMA");
 }
-
 void World_Update(World *w, float dt, int screenW) {
     for (int i = 0; i < w->laneCount; i++) {
         Lane *ln = &w->lanes[i];
