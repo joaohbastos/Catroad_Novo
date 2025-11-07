@@ -16,6 +16,7 @@ static Player player;
 static World world;
 static GameTimer timer35;
 static GameState state;
+static int rowsPlayable = MAX_LANES - 1;
 
 // 🎥 SISTEMA DE CÂMERA
 static Vector2 cameraOffset = {0, 0};
