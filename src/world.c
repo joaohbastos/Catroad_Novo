@@ -35,19 +35,19 @@ void World_Init(World *w, int screenW, int screenH, float tile) {
     }
 }
 
-// 🎯 FUNÇÃO CORRIGIDA - GERA LANES ACIMA DO PLAYER
+// 🎯 FUNÇÃO CORRIGIDA - SEM ESPAÇOS VAZIOS
 void World_AddLaneOnTop(World *w, int screenW, int screenH) {
-    // Encontra a lane mais alta (menor valor Y)
-    int highestY = w->lanes[0].y;
+    // Encontra a lane MAIS BAIXA (maior Y) para saber onde colocar a nova lane
+    int lowestY = w->lanes[0].y;
     for (int i = 1; i < w->laneCount; i++) {
-        if (w->lanes[i].y < highestY) {
-            highestY = w->lanes[i].y;
+        if (w->lanes[i].y > lowestY) {
+            lowestY = w->lanes[i].y;
         }
     }
     
-    // Cria nova lane ACIMA da mais alta
+    // Cria nova lane IMEDIATAMENTE ACIMA da mais baixa
     Lane newLane;
-    newLane.y = highestY - (int)w->tile; // ACIMA da lane mais alta
+    newLane.y = lowestY - (int)w->tile; // Logo acima da lane mais baixa
     newLane.isRoad = (GetRandomValue(0, 1) == 1); // 50% chance de ser estrada
     newLane.carCount = 0;
     
@@ -70,14 +70,15 @@ void World_AddLaneOnTop(World *w, int screenW, int screenH) {
         }
     }
     
-    // Adiciona a nova lane ao array (precisa reorganizar)
-    // Move todas as lanes para baixo para fazer espaço no topo
-    for (int i = w->laneCount - 1; i > 0; i--) {
-        w->lanes[i] = w->lanes[i-1];
+    // Substitui a lane mais BAIXA pela nova (em vez de mover tudo)
+    for (int i = 0; i < w->laneCount; i++) {
+        if (w->lanes[i].y == lowestY) {
+            w->lanes[i] = newLane;
+            break;
+        }
     }
-    w->lanes[0] = newLane;
     
-    printf("🛣️ Nova lane GERADA em Y=%d (acima do mundo)\n", newLane.y);
+    printf("🛣️ Nova lane em Y=%d (substituiu a mais baixa)\n", newLane.y);
 }
 void World_Update(World *w, float dt, int screenW) {
     for (int i = 0; i < w->laneCount; i++) {
