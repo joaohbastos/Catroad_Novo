@@ -47,7 +47,7 @@ void Game_Update(void) {
     if (state == STATE_PLAYING) {
         Timer_Update(&timer35, dt);
         World_Update(&world, dt, SCREEN_W);
-        Player_Update(&player, dt, TILE, SCREEN_W, SCREEN_H);
+        Player_Update(&player, dt, TILE, rowsPlayable, SCREEN_W, SCREEN_H);
 
         // 🎥 CÂMERA - Acompanha o player quando sobe
         if (player.box.y < 300.0f) {
