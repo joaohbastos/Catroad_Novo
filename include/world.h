@@ -3,7 +3,7 @@
 
 #include "raylib.h"
 
-#define MAX_LANES 350  // 🔥 Aumentamos para 350 (mais que 300)
+#define MAX_LANES 350
 
 typedef enum {
     LANE_GRASS,
@@ -15,8 +15,10 @@ typedef struct {
     LaneType type;
     Rectangle rect;
     bool hasCar;
+    int carCount;       // 🔥 Quantidade de carros (1-3)
     float carX;
     float carSpeed;
+    float carSpacing;   // 🔥 Espaçamento entre carros
     Color color;
 } Lane;
 
