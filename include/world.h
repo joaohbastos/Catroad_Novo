@@ -1,35 +1,38 @@
 #ifndef WORLD_H
 #define WORLD_H
+
 #include "raylib.h"
-#include <stdbool.h>
 
-#define MAX_LANES 12
-#define MAX_CARS_PER_LANE 8
+#define MAX_LANES 300  // 🔥 Aumentamos para 300 lanes
 
-typedef struct {
-    Rectangle box;
-    float speed;
-    int dir;
-    bool active;
-} Car;
+typedef enum {
+    LANE_GRASS,
+    LANE_ROAD,
+    LANE_RIVER
+} LaneType;
 
 typedef struct {
-    int y;
-    bool isRoad;
-    int carCount;
-    Car cars[MAX_CARS_PER_LANE];
+    LaneType type;
+    Rectangle rect;
+    bool hasLog;
+    float logX;
+    float logSpeed;
+    bool hasCar;
+    float carX;
+    float carSpeed;
+    Color color;
 } Lane;
 
 typedef struct {
-    int laneCount;
-    float tile;
     Lane lanes[MAX_LANES];
+    int laneCount;
+    float tileSize;
 } World;
 
-void World_Init(World *w, int screenW, int screenH, float tile);
-void World_Update(World *w, float dt, int screenW);
-void World_Draw(const World *w, Vector2 cameraOffset);
-bool World_CheckCollision(const World *w, Rectangle player);
-void World_AddLaneOnTop(World *w, int screenW, int screenH);
+void World_Init(World *world, int screenWidth, int screenHeight, float tileSize);
+void World_Update(World *world, float dt, int screenWidth);
+void World_Draw(const World *world, Vector2 cameraOffset);
+bool World_CheckCollision(const World *world, Rectangle playerRect);
+void World_AddLaneOnTop(World *world, int screenWidth, int screenHeight);
 
 #endif
