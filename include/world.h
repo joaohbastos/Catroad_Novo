@@ -3,7 +3,7 @@
 
 #include "raylib.h"
 
-#define MAX_LANES 300  // 🔥 Aumentamos para 300 lanes
+#define MAX_LANES 350  // 🔥 Aumentamos para 350 (mais que 300)
 
 typedef enum {
     LANE_GRASS,
@@ -14,9 +14,6 @@ typedef enum {
 typedef struct {
     LaneType type;
     Rectangle rect;
-    bool hasLog;
-    float logX;
-    float logSpeed;
     bool hasCar;
     float carX;
     float carSpeed;
@@ -33,6 +30,5 @@ void World_Init(World *world, int screenWidth, int screenHeight, float tileSize)
 void World_Update(World *world, float dt, int screenWidth);
 void World_Draw(const World *world, Vector2 cameraOffset);
 bool World_CheckCollision(const World *world, Rectangle playerRect);
-void World_AddLaneOnTop(World *world, int screenWidth, int screenHeight);
 
 #endif

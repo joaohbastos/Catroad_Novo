@@ -6,31 +6,44 @@ void World_Init(World *world, int screenWidth, int screenHeight, float tileSize)
     world->tileSize = tileSize;
     world->laneCount = 0;
     
-    // 🔥 Criar MUITAS mais lanes (exemplo: 200)
-    for (int i = 0; i < 200; i++) {
+    printf("🌍 Criando 300 lanes...\n");
+    
+    // 🔥 CRIAR 300 LANES
+    for (int i = 0; i < 300; i++) {
+        if (world->laneCount >= MAX_LANES) break;
+        
         Lane lane;
         lane.rect = (Rectangle){0, screenHeight - (i + 1) * tileSize, screenWidth, tileSize};
         
-        // Alternar entre grama e estrada
-        if (i % 3 == 0) {
+        // Padrão: Grama, Estrada, Grama, Estrada, etc.
+        if (i % 2 == 0) {
+            // LANE DE ESTRADA
             lane.type = LANE_ROAD;
-            lane.color = (Color){80, 80, 80, 255};  // Cinza escuro (estrada)
+            lane.color = (Color){60, 60, 60, 255};  // Cinza escuro
             lane.hasCar = true;
-            lane.carX = (i % 2 == 0) ? -tileSize : screenWidth;  // Carros vindo de lados diferentes
-            lane.carSpeed = (i % 2 == 0) ? 150.0f : -120.0f;
+            
+            // Carros alternando direções
+            if (i % 4 == 0) {
+                lane.carX = -tileSize * 2;
+                lane.carSpeed = 180.0f;
+            } else {
+                lane.carX = screenWidth + tileSize;
+                lane.carSpeed = -160.0f;
+            }
         } else {
+            // LANE DE GRAMA
             lane.type = LANE_GRASS;
-            lane.color = (Color){34, 139, 34, 255};  // Verde (grama)
+            lane.color = (Color){50, 168, 82, 255};  // Verde grama
             lane.hasCar = false;
+            lane.carSpeed = 0;
+            lane.carX = 0;
         }
         
         world->lanes[world->laneCount] = lane;
         world->laneCount++;
-        
-        if (world->laneCount >= MAX_LANES) break;
     }
     
-    printf("🌍 Mundo inicializado com %d lanes\n", world->laneCount);
+    printf("✅ Mundo criado com %d lanes (de 0 a %d)\n", world->laneCount, world->laneCount - 1);
 }
 
 void World_Update(World *world, float dt, int screenWidth) {
@@ -42,10 +55,10 @@ void World_Update(World *world, float dt, int screenWidth) {
             lane->carX += lane->carSpeed * dt;
             
             // Fazer o carro reaparecer do outro lado
-            if (lane->carSpeed > 0 && lane->carX > screenWidth) {
-                lane->carX = -world->tileSize * 2;
-            } else if (lane->carSpeed < 0 && lane->carX < -world->tileSize * 2) {
-                lane->carX = screenWidth;
+            if (lane->carSpeed > 0 && lane->carX > screenWidth + tileSize * 2) {
+                lane->carX = -world->tileSize * 3;
+            } else if (lane->carSpeed < 0 && lane->carX < -world->tileSize * 3) {
+                lane->carX = screenWidth + world->tileSize * 2;
             }
         }
     }
@@ -59,25 +72,38 @@ void World_Draw(const World *world, Vector2 cameraOffset) {
         Rectangle drawRect = lane->rect;
         drawRect.y -= cameraOffset.y;
         
-        // Desenhar a lane
+        // Só desenhar se estiver visível na tela
+        if (drawRect.y + drawRect.height < 0) continue;  // Muito acima
+        if (drawRect.y > 600) continue;  // Muito abaixo
+        
+        // Desenhar a lane base
         DrawRectangleRec(drawRect, lane->color);
         
-        // Desenhar marcações da estrada
         if (lane->type == LANE_ROAD) {
-            for (int x = 20; x < drawRect.width; x += 80) {
-                DrawRectangle(x, drawRect.y + drawRect.height/2 - 2, 40, 4, YELLOW);
+            // Linhas divisórias da estrada
+            for (int x = 40; x < screenWidth; x += 80) {
+                DrawRectangle(x, drawRect.y + drawRect.height/2 - 1, 30, 2, YELLOW);
             }
-        }
-        
-        // Desenhar carro se existir
-        if (lane->type == LANE_ROAD && lane->hasCar) {
-            Rectangle carRect = {
-                lane->carX,
-                drawRect.y,
-                world->tileSize * 2,
-                world->tileSize
-            };
-            DrawRectangleRec(carRect, RED);
+            
+            // Desenhar carro
+            if (lane->hasCar) {
+                Rectangle carRect = {
+                    lane->carX,
+                    drawRect.y + 2,
+                    world->tileSize * 1.8f,
+                    world->tileSize - 4
+                };
+                DrawRectangleRec(carRect, RED);
+                // Detalhes do carro
+                DrawRectangle(carRect.x + 5, carRect.y + 5, carRect.width - 10, 8, (Color){200, 200, 200, 255});
+            }
+        } else {
+            // Detalhes da grama (flores/graminha)
+            for (int x = 20; x < screenWidth; x += 60) {
+                if (GetRandomValue(0, 100) > 70) {
+                    DrawCircle(x, drawRect.y + drawRect.height/2, 2, (Color){255, 255, 100, 255});
+                }
+            }
         }
     }
 }
@@ -91,49 +117,17 @@ bool World_CheckCollision(const World *world, Rectangle playerRect) {
             if (lane->type == LANE_ROAD && lane->hasCar) {
                 Rectangle carRect = {
                     lane->carX,
-                    lane->rect.y,
-                    world->tileSize * 2,
-                    world->tileSize
+                    lane->rect.y + 2,
+                    world->tileSize * 1.8f,
+                    world->tileSize - 4
                 };
                 
                 if (CheckCollisionRecs(playerRect, carRect)) {
-                    return true;  // Colisão com carro!
+                    printf("💥 Colisão na lane %d!\n", i);
+                    return true;
                 }
             }
         }
     }
     return false;
-}
-
-void World_AddLaneOnTop(World *world, int screenWidth, int screenHeight) {
-    if (world->laneCount >= MAX_LANES) return;
-    
-    // Encontrar a Y mais alta (menor valor)
-    float highestY = world->lanes[0].rect.y;
-    for (int i = 1; i < world->laneCount; i++) {
-        if (world->lanes[i].rect.y < highestY) {
-            highestY = world->lanes[i].rect.y;
-        }
-    }
-    
-    // Criar nova lane acima da mais alta
-    Lane newLane;
-    newLane.rect = (Rectangle){0, highestY - world->tileSize, screenWidth, world->tileSize};
-    
-    // Alternar tipos
-    int laneType = world->laneCount % 3;
-    if (laneType == 0) {
-        newLane.type = LANE_ROAD;
-        newLane.color = (Color){80, 80, 80, 255};
-        newLane.hasCar = true;
-        newLane.carX = (world->laneCount % 2 == 0) ? -world->tileSize : screenWidth;
-        newLane.carSpeed = (world->laneCount % 2 == 0) ? 150.0f : -120.0f;
-    } else {
-        newLane.type = LANE_GRASS;
-        newLane.color = (Color){34, 139, 34, 255};
-        newLane.hasCar = false;
-    }
-    
-    world->lanes[world->laneCount] = newLane;
-    world->laneCount++;
 }

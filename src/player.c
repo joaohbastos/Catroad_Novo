@@ -1,14 +1,3 @@
-#include "player.h"
-#include "raylib.h"
-
-void Player_Init(Player *p, Vector2 startPos, float size) {
-    p->box = (Rectangle){ startPos.x, startPos.y, size, size };
-    p->row = 0;
-    p->maxRow = 0;
-    p->score = 0;
-    p->moveCd = 0.0f;
-}
-
 void Player_Update(Player *p, float dt, float tile, int screenW, int screenH) {
     if (p->moveCd > 0.0f) p->moveCd -= dt;
 
@@ -40,44 +29,24 @@ void Player_Update(Player *p, float dt, float tile, int screenW, int screenH) {
                 if (delta.y < 0) { // subiu uma linha
                     p->row += 1;
                     
-                    // 🎯 PONTUAÇÃO - conta cada linha subida
+                    // 🎯 ATUALIZAR SCORE
                     if (p->row > p->maxRow) {
                         p->maxRow = p->row;
                     }
                     p->score = p->row;
                     
-                    printf("⬆️ Player subiu para linha %d | Pontuação: %d\n", p->row, p->score);
+                    // Debug a cada 10 linhas
+                    if (p->row % 10 == 0) {
+                        printf("🎯 Linha %d | Score: %d\n", p->row, p->score);
+                    }
                 }
             }
             p->moveCd = 0.12f;
         }
     }
 
-    // Limites da tela
+    // Limites
     if (p->box.x < 0) p->box.x = 0;
     if (p->box.x + p->box.width > screenW) p->box.x = screenW - p->box.width;
-    
-    // Limite vertical inferior apenas
     if (p->box.y + p->box.height > screenH) p->box.y = screenH - p->box.height;
-}
-
-void Player_Draw(const Player *p, Vector2 cameraOffset) {
-    Rectangle playerRect = p->box;
-    playerRect.y -= cameraOffset.y;
-    
-    DrawRectangleRec(playerRect, (Color){240, 180, 60, 255});
-    DrawTriangle(
-        (Vector2){playerRect.x + playerRect.width*0.25f, playerRect.y + 8},
-        (Vector2){playerRect.x + playerRect.width*0.40f, playerRect.y - playerRect.height*0.25f},
-        (Vector2){playerRect.x + playerRect.width*0.55f, playerRect.y + 8},
-        (Color){240, 180, 60, 255}
-    );
-    DrawTriangle(
-        (Vector2){playerRect.x + playerRect.width*0.60f, playerRect.y + 8},
-        (Vector2){playerRect.x + playerRect.width*0.75f, playerRect.y - playerRect.height*0.25f},
-        (Vector2){playerRect.x + playerRect.width*0.90f, playerRect.y + 8},
-        (Color){240, 180, 60, 255}
-    );
-    DrawCircle(playerRect.x + playerRect.width*0.35f, playerRect.y + playerRect.height*0.45f, 3, BLACK);
-    DrawCircle(playerRect.x + playerRect.width*0.65f, playerRect.y + playerRect.height*0.45f, 3, BLACK);
 }
