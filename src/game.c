@@ -56,11 +56,11 @@ void Game_Update(void) {
         }
         if (cameraOffset.y > 0) cameraOffset.y = 0;
 
-        // 🎯 (OPCIONAL) LANES INFINITAS - descomente depois que a câmera estiver funcionando
-        // float topLaneY = world.lanes[0].y - cameraOffset.y;
-        // if (topLaneY > SCREEN_H * 0.2f) {
-        //     World_AddLane(&world, SCREEN_W, SCREEN_H);
-        // }
+        // 🎯 LANES INFINITAS - gera nova lane quando player chega no topo
+        float topLaneY = world.lanes[0].y - cameraOffset.y;
+        if (topLaneY > SCREEN_H - 150) { // Quando a lane do topo está baixa na tela
+            World_AddLaneOnTop(&world, SCREEN_W, SCREEN_H);
+        }
 
         // checa colisão ou fim do tempo
         if (World_CheckCollision(&world, player.box) || Timer_IsOver(&timer35)) {

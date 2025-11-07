@@ -99,9 +99,12 @@ bool World_CheckCollision(const World *w, Rectangle player) {
     return false;
 }
 
-void World_AddLane(World *w, int screenW, int screenH) {
-    // Move todas as lanes para baixo
-    for (int i = 0; i < w->laneCount; i++) {
+void World_AddLaneOnTop(World *w, int screenW, int screenH) {
+    // Move todas as lanes para BAIXO (cria espaço no topo)
+    for (int i = w->laneCount - 1; i > 0; i--) {
+        w->lanes[i] = w->lanes[i-1];
+        
+        // Atualiza posição Y de todas as lanes
         w->lanes[i].y += (int)w->tile;
         
         // Move os carros também
@@ -112,10 +115,10 @@ void World_AddLane(World *w, int screenW, int screenH) {
         }
     }
     
-    // Cria nova lane no topo
+    // Cria NOVA lane no TOPO (posição 0)
     Lane *newLane = &w->lanes[0];
     newLane->y = screenH - (int)(w->laneCount * w->tile);
-    newLane->isRoad = (GetRandomValue(0, 1) == 1); // 50% chance de ser rua
+    newLane->isRoad = (GetRandomValue(0, 1) == 1);
     
     if (newLane->isRoad) {
         int cars = 2 + GetRandomValue(0, 2);
@@ -128,7 +131,9 @@ void World_AddLane(World *w, int screenW, int screenH) {
         for (int c = 0; c < cars; c++) {
             float wcar = w->tile * randf(1.2f, 1.8f);
             float hcar = w->tile * 0.8f;
-            float x = (float)GetRandomValue(-screenW, screenW);
+            float x = (dir > 0) ? 
+                -wcar - GetRandomValue(0, 100) :
+                screenW + GetRandomValue(0, 100);
             
             newLane->cars[c].box = (Rectangle){ x, (float)newLane->y + (w->tile - hcar)*0.5f, wcar, hcar };
             newLane->cars[c].speed = speedBase * randf(0.9f, 1.2f);
