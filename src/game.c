@@ -16,7 +16,6 @@ static Player player;
 static World world;
 static GameTimer timer35;
 static GameState state;
-static int rowsPlayable = MAX_LANES - 1;
 
 // 🎥 SISTEMA DE CÂMERA
 static Vector2 cameraOffset = {0, 0};
@@ -48,7 +47,7 @@ void Game_Update(void) {
     if (state == STATE_PLAYING) {
         Timer_Update(&timer35, dt);
         World_Update(&world, dt, SCREEN_W);
-        Player_Update(&player, dt, TILE, rowsPlayable, SCREEN_W, SCREEN_H);
+        Player_Update(&player, dt, TILE, SCREEN_W, SCREEN_H);
 
         // 🎥 CÂMERA - Acompanha o player quando sobe
         if (player.box.y < 300.0f) {
@@ -56,16 +55,13 @@ void Game_Update(void) {
         }
         if (cameraOffset.y > 0) cameraOffset.y = 0;
 
-        // 🎯 LANES INFINITAS - BASEADO NA POSIÇÃO DO PLAYER
-    static int lastLaneCheck = 0;
-
-    // Gera nova lane quando o player está no topo da tela
-    float playerScreenY = player.box.y - cameraOffset.y;
-    if (playerScreenY < 150.0f && player.box.y != lastLaneCheck) {
-        World_AddLaneOnTop(&world, SCREEN_W, SCREEN_H);
-        lastLaneCheck = (int)player.box.y;
-        printf("🎯 Player no topo! Gerando nova lane. PlayerY: %.0f\n", player.box.y);
-    }
+        // 🎯 LANES INFINITAS - VERSÃO QUE FUNCIONA!
+        static int lastRow = -1;
+        if (player.row != lastRow && player.row > 5) {
+            World_AddLaneOnTop(&world, SCREEN_W, SCREEN_H);
+            printf("🛣️ Player linha %d - Gerando nova lane!\n", player.row);
+            lastRow = player.row;
+        }
 
         // Checa colisão ou fim do tempo
         if (World_CheckCollision(&world, player.box) || Timer_IsOver(&timer35)) {
