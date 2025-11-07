@@ -50,22 +50,22 @@ void Game_Update(void) {
         World_Update(&world, dt, SCREEN_W);
         Player_Update(&player, dt, TILE, rowsPlayable, SCREEN_W, SCREEN_H);
 
-        // 🎥 CÂMERA QUE FUNCIONAVA - VERSÃO SIMPLES
+        // 🎥 CÂMERA
         if (player.box.y < 300.0f) {
             cameraOffset.y = player.box.y - 300.0f;
         }
         if (cameraOffset.y > 0) cameraOffset.y = 0;
 
-        // 🎯 LANES INFINITAS - CORRIGIDO
-    static int lastScore = -1;
-    if (player.score != lastScore){
-         World_AddLaneOnTop(&world, SCREEN_W, SCREEN_H);
-        lastScore = player.score;
-        printf("🎯 Score: %d - Lane gerada!\n", player.score);
-    }
-        
-       
-    
+        // 🎯 LANES INFINITAS - VERSÃO QUE FUNCIONA!
+        static int lastRow = -1;
+        if (player.row != lastRow) {
+            // Gera nova lane quando o player sobe além das lanes iniciais
+            if (player.row >= 8) {
+                World_AddLaneOnTop(&world, SCREEN_W, SCREEN_H);
+                printf("🛣️ Player na linha %d - Nova lane gerada!\n", player.row);
+            }
+            lastRow = player.row;
+        }
 
         // checa colisão ou fim do tempo
         if (World_CheckCollision(&world, player.box) || Timer_IsOver(&timer35)) {
@@ -93,9 +93,14 @@ void Game_Draw(void) {
     // UI
     DrawRectangle(0, 0, SCREEN_W, 40, (Color){0, 0, 0, 140});
     char hud[128];
-    snprintf(hud, sizeof(hud), "Tempo: %02d  |  Pontos: %d",
-             (int)timer35.timeLeft, player.score);
+    snprintf(hud, sizeof(hud), "Tempo: %02d  |  Pontos: %d | Linha: %d",
+             (int)timer35.timeLeft, player.score, player.row);
     DrawText(hud, 16, 10, 20, RAYWHITE);
+
+    // Debug da câmera
+    char camInfo[64];
+    snprintf(camInfo, sizeof(camInfo), "CameraY: %.1f", cameraOffset.y);
+    DrawText(camInfo, SCREEN_W - 150, 10, 16, YELLOW);
 
     if (state == STATE_GAMEOVER) {
         const char *msg = "Game Over!";
