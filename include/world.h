@@ -6,31 +6,31 @@
 #define MAX_LANES 350
 
 typedef enum {
-    LANE_GRASS,
-    LANE_ROAD,
-    LANE_RIVER
-} LaneType;
+    pavimento,
+    estrada,
+    rio
+} tipo;
 
 typedef struct {
-    LaneType type;
+    tipo type;
     Rectangle rect;
     bool hasCar;
-    int carCount;       // 🔥 Quantidade de carros (1-3)
+    int carCount;
     float carX;
-    float carSpeed;
-    float carSpacing;   // 🔥 Espaçamento entre carros
-    Color color;
+    float velocidade;
+    float carSpacing;
+    Color cor;
 } Lane;
 
 typedef struct {
-    Lane lanes[MAX_LANES];
-    int laneCount;
+    Lane ruas[MAX_LANES];
+    int quantidade_linha;
     float tileSize;
 } World;
 
-void World_Init(World *world, int screenWidth, int screenHeight, float tileSize);
-void World_Update(World *world, float dt, int screenWidth);
-void World_Draw(const World *world, Vector2 cameraOffset);
-bool World_CheckCollision(const World *world, Rectangle playerRect);
+void criarmundo(World *mundo, int screenWidth, int screenHeight, float tileSize);
+void World_Update(World *mundo, float dt, int screenWidth);
+void World_Draw(const World *mundo, Vector2 cameraOffset);
+bool World_CheckCollision(const World *mundo, Rectangle playerRect);
 
 #endif

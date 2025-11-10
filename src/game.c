@@ -4,21 +4,22 @@
 #include "timer.h"
 #include <stdio.h>
 
-#define SCREEN_W  800
-#define SCREEN_H  600
-#define TILE      48.0f
+#define SCREEN_W 800
+#define SCREEN_H 600
+#define TILE 48.0f
 #define TOTAL_TIME 35.0f
 
 typedef enum { STATE_PLAYING, STATE_GAMEOVER } GameState;
 
-static Player player;
+static Jogador player;
 static World world;
 static GameTimer timer35;
 static GameState state;
 static Vector2 cameraOffset = {0, 0};
 
 static void ResetGame(void) {
-    World_Init(&world, SCREEN_W, SCREEN_H, TILE);
+    criarmundo(&world, SCREEN_W, SCREEN_H, TILE); 
+    
     Player_Init(&player, (Vector2){ SCREEN_W*0.5f - TILE*0.5f, SCREEN_H - TILE }, TILE);
     Timer_Reset(&timer35, TOTAL_TIME);
     state = STATE_PLAYING;
@@ -79,8 +80,10 @@ void Game_Draw(void) {
     // UI
     DrawRectangle(0, 0, SCREEN_W, 40, (Color){0, 0, 0, 140});
     char hud[128];
-    snprintf(hud, sizeof(hud), "Tempo: %02d  |  Pontos: %d | Linha: %d",
-             (int)timer35.timeLeft, player.score, player.row);
+    
+    snprintf(hud, sizeof(hud), "Tempo: %02d   |   Pontos: %d | Linha: %d",
+             (int)timer35.timeLeft, player.ponto, player.linha);
+             
     DrawText(hud, 16, 10, 20, RAYWHITE);
 
     if (state == STATE_GAMEOVER) {
@@ -91,7 +94,9 @@ void Game_Draw(void) {
         DrawText(msg, SCREEN_W/2 - fw/2, SCREEN_H/2 - 60, 40, RED);
 
         char sc[128];
-        snprintf(sc, sizeof(sc), "Distancia: %d linhas", player.score);
+        
+        snprintf(sc, sizeof(sc), "Distancia: %d linhas", player.ponto);
+        
         int sw = MeasureText(sc, 24);
         DrawText(sc, SCREEN_W/2 - sw/2, SCREEN_H/2 - 16, 24, RAYWHITE);
 

@@ -3,16 +3,17 @@
 
 #include "raylib.h"
 
-typedef struct {
+typedef struct jogador {
     Rectangle box;
-    int row;
-    int maxRow;
-    int score;
+    int linha;
+    int maxLinha;
+    int ponto;
     float moveCd;
-} Player;
+} Jogador;
 
-void Player_Init(Player *p, Vector2 startPos, float size);
-void Player_Update(Player *p, float dt, float tile, int screenW, int screenH);
-void Player_Draw(const Player *p, Vector2 cameraOffset);
+// MUDANÇAS AQUI: As funções agora usam "Jogador"
+void Player_Init(Jogador *p, Vector2 startPos, float size);
+void Player_Update(Jogador *p, float dt, float tile, int screenW, int screenH);
+void Player_Draw(const Jogador *p, Vector2 cameraOffset);
 
 #endif

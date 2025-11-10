@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include "raylib.h" 
 
-void Game_Init(void);
+void criarmundo(void);
 void Game_Update(void);
 void Game_Draw(void);
 void Game_Unload(void);
