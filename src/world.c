@@ -40,6 +40,7 @@ void criarmundo(World *mundo, int screenWidth, int screenHeight, float tileSize)
                 rua.carCount = 0;
                 rua.velocidade = 0;
                 rua.carX = 0;
+                rua.carSpacing = 0;
             }
         } else {
             rua.type = pavimento; // CORRIGIDO: Era rua.tipo
@@ -48,6 +49,7 @@ void criarmundo(World *mundo, int screenWidth, int screenHeight, float tileSize)
             rua.carCount = 0;
             rua.velocidade = 0;
             rua.carX = 0;
+            rua.carSpacing = 0;
         }
 
         mundo->ruas[mundo->quantidade_linha] = rua; // CORRIGIDO: Era world->linhas
@@ -62,14 +64,20 @@ void World_Update(World *mundo, float dt, int screenWidth) {
         Lane *rua = &mundo->ruas[i];
         
         if (rua->type == estrada && rua->hasCar) { // CORRIGIDO: Era LANE_ROAD
-            // Atualizar posição do carro
+            // Atualizar posição base do comboio de carros
             rua->carX += rua->velocidade * dt;
 
-            // Fazer o carro reaparecer do outro lado
-            if (rua->velocidade > 0 && rua->carX > screenWidth + mundo->tileSize * 4) {
-                rua->carX = -mundo->tileSize * 4;
-            } else if (rua->velocidade < 0 && rua->carX < -mundo->tileSize * 4) {
-                rua->carX = screenWidth + mundo->tileSize * 4;
+            // Tamanho aproximado do comboio (espaçamento entre carros + largura do primeiro)
+            float comboioSize = 0.0f;
+            if (rua->carCount > 0) {
+                comboioSize = (rua->carCount - 1) * rua->carSpacing + mundo->tileSize * 2.0f;
+            }
+
+            // Fazer o comboio reaparecer do outro lado da tela
+            if (rua->velocidade > 0 && rua->carX > screenWidth + comboioSize) {
+                rua->carX = -comboioSize;
+            } else if (rua->velocidade < 0 && rua->carX < -comboioSize) {
+                rua->carX = screenWidth + comboioSize;
             }
         }
     }
@@ -104,13 +112,6 @@ void World_Draw(const World *mundo, Vector2 cameraOffset) {
                     float carOffset = carIndex * rua->carSpacing;
                     float currentCarX = rua->carX + carOffset;
 
-                    // Ajustar para aparecer do outro lado se necessário
-                    if (rua->velocidade > 0 && currentCarX > screenWidth + mundo->tileSize * 4) { // CORRIGIDO: Era rua->carSpeed
-                        currentCarX = rua->carX + carOffset - (screenWidth + mundo->tileSize * 8);
-                    } else if (rua->velocidade < 0 && currentCarX < -mundo->tileSize * 4) { // CORRIGIDO: Era rua->carSpeed
-                        currentCarX = rua->carX + carOffset + (screenWidth + mundo->tileSize * 8);
-                    }
-                    
                     // Só desenhar se estiver visível na tela
                     if (currentCarX > -mundo->tileSize * 3 && currentCarX < screenWidth + mundo->tileSize * 3){
                         Rectangle carRect = {
