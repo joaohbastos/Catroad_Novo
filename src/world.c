@@ -6,6 +6,7 @@
 void criarmundo(World *mundo, int screenWidth, int screenHeight, float tileSize) {
     mundo->tileSize = tileSize;
     mundo->quantidade_linha = 0;
+    mundo->dificuldadeAtual = 1.0f; // inicial
     
     // Criar ruas e grama alternadas
     for (int i = 0; i < 300; i++) {
@@ -17,14 +18,14 @@ void criarmundo(World *mundo, int screenWidth, int screenHeight, float tileSize)
         // Padrão: Grama, Estrada, Grama, Estrada, etc.
         if (i % 2 == 0) {
             // LANE DE ESTRADA
-            rua.type = estrada; // CORRIGIDO: Era LANE_ROAD
+            rua.type = estrada;
             rua.cor = (Color){60, 60, 60, 255};  // Cinza escuro
             
-            // 🔥 ALEATORIEDADE: 70% de chance de ter carro
+            // 70% de chance de ter carro
             rua.hasCar = (GetRandomValue(0, 100) < 70);
 
             if (rua.hasCar) {
-                // 🔥 ALEATORIEDADE: Direção aleatória
+                // Direção aleatória
                 if (GetRandomValue(0, 1) == 0) {
                     rua.carX = -tileSize * GetRandomValue(2, 4);
                     rua.velocidade = GetRandomValue(120, 220);
@@ -33,44 +34,61 @@ void criarmundo(World *mundo, int screenWidth, int screenHeight, float tileSize)
                     rua.velocidade = -GetRandomValue(120, 220);
                 }
                 
-                // 🔥 ALEATORIEDADE: Quantidade de carros (1-3 carros por lane)
-                rua.carCount = GetRandomValue(1, 3);
+                // Quantidade de carros (1-3 carros por lane)
+                rua.carCount  = GetRandomValue(1, 3);
                 rua.carSpacing = GetRandomValue(200, 400);
             } else {
-                rua.carCount = 0;
+                rua.carCount  = 0;
                 rua.velocidade = 0;
-                rua.carX = 0;
+                rua.carX       = 0;
                 rua.carSpacing = 0;
             }
         } else {
-            rua.type = pavimento; // CORRIGIDO: Era rua.tipo
+            rua.type = pavimento;
             rua.cor = (Color){130, 130, 130, 255};
-            rua.hasCar = false;
-            rua.carCount = 0;
+            rua.hasCar    = false;
+            rua.carCount  = 0;
             rua.velocidade = 0;
-            rua.carX = 0;
+            rua.carX       = 0;
             rua.carSpacing = 0;
         }
 
-        mundo->ruas[mundo->quantidade_linha] = rua; // CORRIGIDO: Era world->linhas
+        mundo->ruas[mundo->quantidade_linha] = rua;
         mundo->quantidade_linha++;
     }
 
     printf("Mundo criado com %d ruas (de 0 a %d)\n", mundo->quantidade_linha, mundo->quantidade_linha - 1);
 }
 
-void World_Update(World *mundo, float dt, int screenWidth) {
+// agora recebe dificuldade
+void World_Update(World *mundo, float dt, int screenWidth, float dificuldade) {
+    // guardar dificuldade dentro do mundo para o Draw e a colisão usarem
+    mundo->dificuldadeAtual = dificuldade;
+
     for (int i = 0; i < mundo->quantidade_linha; i++) {
         Lane *rua = &mundo->ruas[i];
         
-        if (rua->type == estrada && rua->hasCar) { // CORRIGIDO: Era LANE_ROAD
-            // Atualizar posição base do comboio de carros
-            rua->carX += rua->velocidade * dt;
+        if (rua->type == estrada && rua->hasCar) {
+            // velocidade escalar com a dificuldade
+            float velocidadeAtual = rua->velocidade * dificuldade;
 
-            // Tamanho aproximado do comboio (espaçamento entre carros + largura do primeiro)
+            // espaçamento efetivo (maior dificuldade => carros mais próximos)
+            float espacamentoEfetivo = rua->carSpacing;
+            if (dificuldade > 1.0f) {
+                espacamentoEfetivo = rua->carSpacing / dificuldade;
+                if (espacamentoEfetivo < mundo->tileSize * 1.2f) {
+                    // não deixar ficar colado demais
+                    espacamentoEfetivo = mundo->tileSize * 1.2f;
+                }
+            }
+
+            // Atualizar posição base do comboio de carros
+            rua->carX += velocidadeAtual * dt;
+
+            // Tamanho aproximado do comboio
             float comboioSize = 0.0f;
             if (rua->carCount > 0) {
-                comboioSize = (rua->carCount - 1) * rua->carSpacing + mundo->tileSize * 2.0f;
+                comboioSize = (rua->carCount - 1) * espacamentoEfetivo + mundo->tileSize * 2.0f;
             }
 
             // Fazer o comboio reaparecer do outro lado da tela
@@ -98,18 +116,28 @@ void World_Draw(const World *mundo, Vector2 cameraOffset) {
         if (drawRect.y > 600) continue; // Assumindo altura de 600
         
         // Desenhar a lane base
-        DrawRectangleRec(drawRect, rua->cor); // CORRIGIDO: Era rua->color
+        DrawRectangleRec(drawRect, rua->cor);
         
-        if (rua->type == estrada) { // CORRIGIDO: Era LANE_ROAD
+        if (rua->type == estrada) {
             // Linhas divisórias da estrada
             for (int x = 40; x < screenWidth; x += 80) {
                 DrawRectangle(x, drawRect.y + drawRect.height/2 - 1, 30, 2, YELLOW);
             }
             
-            // 🔥 DESENHAR MÚLTIPLOS CARROS
+            // DESENHAR MÚLTIPLOS CARROS
             if (rua->hasCar && rua->carCount > 0) {
+
+                // usar o mesmo conceito de "espacamentoEfetivo" aqui
+                float espacamentoEfetivo = rua->carSpacing;
+                if (mundo->dificuldadeAtual > 1.0f) {
+                    espacamentoEfetivo = rua->carSpacing / mundo->dificuldadeAtual;
+                    if (espacamentoEfetivo < mundo->tileSize * 1.2f) {
+                        espacamentoEfetivo = mundo->tileSize * 1.2f;
+                    }
+                }
+
                 for (int carIndex = 0; carIndex < rua->carCount; carIndex++) {
-                    float carOffset = carIndex * rua->carSpacing;
+                    float carOffset = carIndex * espacamentoEfetivo;
                     float currentCarX = rua->carX + carOffset;
 
                     // Só desenhar se estiver visível na tela
@@ -121,38 +149,50 @@ void World_Draw(const World *mundo, Vector2 cameraOffset) {
                             mundo->tileSize - 4
                         };
                         
-                        // 🔥 CORES ALEATÓRIAS PARA CARROS
                         Color carColors[] = {RED, BLUE, GREEN, PURPLE, ORANGE, DARKGRAY};
                         Color carColor = carColors[i % 6];
                         
                         DrawRectangleRec(carRect, carColor);
                         // Detalhes do carro
-                        DrawRectangle(carRect.x + 5, carRect.y + 5, carRect.width - 10, 8, (Color){200, 200, 200, 255});
+                        DrawRectangle(carRect.x + 5, carRect.y + 5, carRect.width - 10, 8,
+                                      (Color){200, 200, 200, 255});
                     }
                 }
             }
         } else {
-            // 🔥 APENAS graminha simples (opcional)
+            // Graminha simples
             for (int x = 30; x < screenWidth; x += 90) {
                 if (GetRandomValue(0, 100) > 60) {
-                    DrawRectangle(x, drawRect.y + drawRect.height - 6, 2, 6, (Color){40, 120, 40, 255});
+                    DrawRectangle(x,
+                                  drawRect.y + drawRect.height - 6,
+                                  2, 6,
+                                  (Color){40, 120, 40, 255});
                 }
             }
         }
     }
 }
 
-// CORRIGIDO: Nome da função e lógica de colisão
 bool World_CheckCollision(const World *mundo, Rectangle playerRect) {
     for (int i = 0; i < mundo->quantidade_linha; i++) {
         const Lane *rua = &mundo->ruas[i];
 
         // Verificar se o player está nesta lane
         if (CheckCollisionRecs(playerRect, rua->rect)) {
-            if (rua->type == estrada && rua->hasCar && rua->carCount > 0) { // CORRIGIDO: Era LANE_ROAD
-                // 🔥 VERIFICAR COLISÃO COM TODOS OS CARROS
+            if (rua->type == estrada && rua->hasCar && rua->carCount > 0) {
+
+                // mesmo espacamentoEfetivo usado no Draw
+                float espacamentoEfetivo = rua->carSpacing;
+                if (mundo->dificuldadeAtual > 1.0f) {
+                    espacamentoEfetivo = rua->carSpacing / mundo->dificuldadeAtual;
+                    if (espacamentoEfetivo < mundo->tileSize * 1.2f) {
+                        espacamentoEfetivo = mundo->tileSize * 1.2f;
+                    }
+                }
+
+                // VERIFICAR COLISÃO COM TODOS OS CARROS
                 for (int carIndex = 0; carIndex < rua->carCount; carIndex++) {
-                    float carOffset = carIndex * rua->carSpacing;
+                    float carOffset = carIndex * espacamentoEfetivo;
                     float currentCarX = rua->carX + carOffset;
 
                     Rectangle carRect = {
@@ -162,7 +202,6 @@ bool World_CheckCollision(const World *mundo, Rectangle playerRect) {
                         mundo->tileSize - 4
                     };
 
-                    // CORRIGIDO: Checar colisão entre player e o carro
                     if (CheckCollisionRecs(playerRect, carRect)) {
                         printf("💥 Colisão na lane %d\n", i);
                         return true;

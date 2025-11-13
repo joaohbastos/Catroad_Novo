@@ -17,6 +17,9 @@ static GameTimer timer35;
 static GameState state;
 static Vector2 cameraOffset = {0, 0};
 
+// NOVO: dificuldade geral do jogo (1.0 = normal)
+static float dificuldade = 1.0f;
+
 static void ResetGame(void) {
     criarmundo(&world, SCREEN_W, SCREEN_H, TILE); 
     
@@ -24,6 +27,10 @@ static void ResetGame(void) {
     Timer_Reset(&timer35, TOTAL_TIME);
     state = STATE_PLAYING;
     cameraOffset = (Vector2){0, 0};
+
+    // resetar dificuldade
+    dificuldade = 1.0f;
+
     printf("🔄 Jogo reiniciado\n");
 }
 
@@ -45,7 +52,16 @@ void Game_Update(void) {
 
     if (state == STATE_PLAYING) {
         Timer_Update(&timer35, dt);
-        World_Update(&world, dt, SCREEN_W);
+
+        // 📈 Atualizar dificuldade com base em quantas linhas o jogador subiu
+        // cada linha aumenta ~8% de dificuldade, limitado em 3x
+        dificuldade = 1.0f + player.linha * 0.08f;
+        if (dificuldade > 3.0f) {
+            dificuldade = 3.0f;
+        }
+
+        // Mundo agora recebe a dificuldade
+        World_Update(&world, dt, SCREEN_W, dificuldade);
         Player_Update(&player, dt, TILE, SCREEN_W, SCREEN_H);
 
         // Câmera
@@ -85,6 +101,11 @@ void Game_Draw(void) {
              (int)timer35.timeLeft, player.ponto, player.linha);
              
     DrawText(hud, 16, 10, 20, RAYWHITE);
+
+    // Mostrar dificuldade atual (opcional, mas ajuda a ver se está funcionando)
+    char diffText[64];
+    snprintf(diffText, sizeof(diffText), "Dificuldade: %.2f", dificuldade);
+    DrawText(diffText, SCREEN_W - 230, 10, 20, YELLOW);
 
     if (state == STATE_GAMEOVER) {
         DrawRectangle(0, 0, SCREEN_W, SCREEN_H, (Color){0, 0, 0, 180});

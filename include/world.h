@@ -26,10 +26,11 @@ typedef struct {
     Lane ruas[MAX_LANES];
     int quantidade_linha;
     float tileSize;
+    float dificuldadeAtual;   // <-- NOVO CAMPO
 } World;
 
 void criarmundo(World *mundo, int screenWidth, int screenHeight, float tileSize);
-void World_Update(World *mundo, float dt, int screenWidth);
+void World_Update(World *mundo, float dt, int screenWidth, float dificuldade);
 void World_Draw(const World *mundo, Vector2 cameraOffset);
 bool World_CheckCollision(const World *mundo, Rectangle playerRect);
 
