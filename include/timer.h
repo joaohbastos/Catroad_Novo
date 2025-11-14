@@ -6,11 +6,11 @@
 typedef struct {
     float timeLeft;
     bool running;
-} GameTimer;
+} timer;
 
-void Timer_Start(GameTimer *t, float seconds);
-void Timer_Update(GameTimer *t, float dt);
-void Timer_Reset(GameTimer *t, float seconds);
-bool Timer_IsOver(const GameTimer *t);
+void Timer_Start(timer *t, float seconds);
+void passartempo(timer *t, float dt);
+void resettempo(timer *t, float seconds);
+bool tempoesgotado(const timer *t);
 
 #endif

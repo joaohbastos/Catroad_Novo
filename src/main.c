@@ -1,13 +1,13 @@
 #include "game.h"
 
 int main(void) {
-    Game_Init();
+    iniciarjogo();
 
-    while (!Game_ShouldClose()) {
-        Game_Update();
-        Game_Draw();
+    while (!fechar_jogo()) { 
+        atualizarjogo();
+        desenharcenario();
     }
 
-    Game_Unload();
+    parar_de_rodar(); 
     return 0;
 }

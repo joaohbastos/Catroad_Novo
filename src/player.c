@@ -2,17 +2,21 @@
 #include "raylib.h"
 #include <stdio.h>
 
-// CORRIGIDO: Usa 'Jogador' ao invés de 'Player'
-void Player_Init(Jogador *p, Vector2 startPos, float size) {
+
+//comentar dps nesse
+
+
+void Player_Init(Jogador *p, Vector2 startPos, float size) 
+{
     p->box = (Rectangle){ startPos.x, startPos.y, size, size };
     p->linha = 0;
-    p->maxLinha = 0; // CORRIGIDO: Era maxlinha (L maiúsculo)
+    p->maxlinha = 0;
     p->ponto = 0;
     p->moveCd = 0.0f;
 }
 
-// CORRIGIDO: Usa 'Jogador' ao invés de 'Player'
-void Player_Update(Jogador *p, float dt, float tile, int screenW, int screenH) {
+void Player_Update(Jogador *p, float dt, float tile, int screenW, int screenH) 
+{
     if (p->moveCd > 0.0f) p->moveCd -= dt;
 
     Vector2 delta = {0};
@@ -23,11 +27,9 @@ void Player_Update(Jogador *p, float dt, float tile, int screenW, int screenH) {
             delta.y -= tile;
             movedRow = true;
         } else if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) {
-            // LÓGICA CORRIGIDA: A lógica para 'descer' deve ser igual a de 'subir'
-            // O 'return' e a movimentação imediata (p->box.y +=) estavam errados.
             if (p->linha > 0) {
                 delta.y += tile;
-                movedRow = true; // Avisa que uma linha foi movida
+                movedRow = true;
             }
         } else if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
             delta.x -= tile;
@@ -35,27 +37,21 @@ void Player_Update(Jogador *p, float dt, float tile, int screenW, int screenH) {
             delta.x += tile;
         }
 
-        // Esta parte agora lida com todos os movimentos (Cima, Baixo, Esq, Dir)
         if (delta.x != 0 || movedRow) {
             p->box.x += delta.x;
             
             if (movedRow) {
                 p->box.y += delta.y;
                 
-                if (delta.y < 0) { // subiu uma linha
+                if (delta.y < 0) {
                     p->linha += 1;
                     
-                    // 🎯 ATUALIZAR SCORE
-                    if (p->linha > p->maxLinha) { // CORRIGIDO: Era maxlinha
-                        p->maxLinha = p->linha; // CORRIGIDO: Era maxlinha
+                    if (p->linha > p->maxlinha) {
+                        p->maxlinha = p->linha;
                     }
                     p->ponto = p->linha;
 
-                    // Debug a cada 10 linhas
-                    if (p->linha % 10 == 0) {
-                        printf("🎯 Linha %d | Score: %d\n", p->linha, p->ponto);
-                    }
-                } else if (delta.y > 0) { // desceu uma linha
+                } else if (delta.y > 0) {
                     p->linha -= 1;
                 }
             }
@@ -63,14 +59,12 @@ void Player_Update(Jogador *p, float dt, float tile, int screenW, int screenH) {
         }
     }
 
-    // Limites (agora funciona para todos os movimentos)
     if (p->box.x < 0) p->box.x = 0;
     if (p->box.x + p->box.width > screenW) p->box.x = screenW - p->box.width;
     if (p->box.y + p->box.height > screenH) p->box.y = screenH - p->box.height;
 }
 
-// CORRIGIDO: Usa 'Jogador' ao invés de 'Player'
-void Player_Draw(const Jogador *p, Vector2 cameraOffset) {
+void personagem(const Jogador *p, Vector2 cameraOffset) {
     Rectangle playerRect = p->box;
     playerRect.y -= cameraOffset.y;
     

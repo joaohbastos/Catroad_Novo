@@ -4,11 +4,11 @@
 #include <stdbool.h>
 #include "raylib.h" 
 
-void Game_Init(void);
+void iniciarjogo(void);
 void criarmundo(void);
-void Game_Update(void);
-void Game_Draw(void);
-void Game_Unload(void);
-bool Game_ShouldClose(void);
+void atualizarjogo(void);
+void desenharcenario(void);
+void parar_de_rodar(void);
+bool fechar_jogo(void);
 
 #endif

@@ -3,35 +3,36 @@
 
 #include "raylib.h"
 
-#define MAX_LANES 350
+#define MAXFAIXAS 350
 
 typedef enum {
-    pavimento,
+    calcada,
     estrada,
     rio
-} tipo;
+} TipoFaixa;
 
 typedef struct {
-    tipo type;
+    TipoFaixa tipo;
     Rectangle rect;
-    bool hasCar;
-    int carCount;
-    float carX;
+    bool temcarro;
+    int contagemcarros;
+    float posicaocarroX;
     float velocidade;
-    float carSpacing;
+    float espacoentrecarros;
     Color cor;
-} Lane;
+} Rua;
 
 typedef struct {
-    Lane ruas[MAX_LANES];
-    int quantidade_linha;
-    float tileSize;
-    float dificuldadeAtual;   // <-- NOVO CAMPO
-} World;
+    Rua faixas[MAXFAIXAS];
+    int quantidadelinhas;
+    float tamanho;
+    float dificuldadeatual;
+} Mundo;
 
-void criarmundo(World *mundo, int screenWidth, int screenHeight, float tileSize);
-void World_Update(World *mundo, float dt, int screenWidth, float dificuldade);
-void World_Draw(const World *mundo, Vector2 cameraOffset);
-bool World_CheckCollision(const World *mundo, Rectangle playerRect);
+void criarmundo(Mundo *mundo, int largura, int altura, float tamanho);
+
+void World_Update(Mundo *mundo, float dt, int largura, float dificuldade);
+void planodefundo(const Mundo *mundo, Vector2 deslocamentocamera);
+bool checarcolisao(const Mundo *mundo, Rectangle retanguloJogador);
 
 #endif

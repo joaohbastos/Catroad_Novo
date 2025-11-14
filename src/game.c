@@ -3,139 +3,119 @@
 #include "world.h"
 #include "timer.h"
 #include <stdio.h>
+#define largura 800
+#define altura 600
+#define tamanho 48.0f
+#define tempo 35.0f
 
-#define SCREEN_W 800
-#define SCREEN_H 600
-#define TILE 48.0f
-#define TOTAL_TIME 35.0f
-
-typedef enum { STATE_PLAYING, STATE_GAMEOVER } GameState;
+typedef enum {jogando, fimdejogo} estados;
 
 static Jogador player;
-static World world;
-static GameTimer timer35;
-static GameState state;
-static Vector2 cameraOffset = {0, 0};
+static Mundo mundo;
+static timer cronometro;
+static estados estado;
+static Vector2 deslocamentocamera = {0, 0};
 
-// NOVO: dificuldade geral do jogo (1.0 = normal)
 static float dificuldade = 1.0f;
 
-static void ResetGame(void) {
-    criarmundo(&world, SCREEN_W, SCREEN_H, TILE); 
-    
-    Player_Init(&player, (Vector2){ SCREEN_W*0.5f - TILE*0.5f, SCREEN_H - TILE }, TILE);
-    Timer_Reset(&timer35, TOTAL_TIME);
-    state = STATE_PLAYING;
-    cameraOffset = (Vector2){0, 0};
-
-    // resetar dificuldade
+//inicializa o mundo novamente, voltando do estado inicial
+static void reiniciar(void) {
+    criarmundo(&mundo, largura, altura, tamanho); 
+    Player_Init(&player, (Vector2){ largura*0.5f - tamanho*0.5f, altura - tamanho }, tamanho);
+    resettempo(&cronometro, tempo);
+    estado = jogando;
+    deslocamentocamera = (Vector2){0, 0};
     dificuldade = 1.0f;
-
     printf("🔄 Jogo reiniciado\n");
 }
 
-void Game_Init(void) {
-    InitWindow(SCREEN_W, SCREEN_H, "CatRoad - raylib");
+void iniciarjogo(void) {
+    InitWindow(largura, altura, "CatRoad - raylib");
     SetTargetFPS(60);
-    
-    // Tenta inicializar áudio, mas não quebra se falhar
-    if (!IsAudioDeviceReady()) {
-        InitAudioDevice();
-    }
-    
     SetRandomSeed((unsigned int)GetTime());
-    ResetGame();
+    reiniciar();
 }
 
-void Game_Update(void) {
+
+void atualizarjogo(void) {
     float dt = GetFrameTime();
-
-    if (state == STATE_PLAYING) {
-        Timer_Update(&timer35, dt);
-
-        // 📈 Atualizar dificuldade com base em quantas linhas o jogador subiu
-        // cada linha aumenta ~8% de dificuldade, limitado em 3x
+    if (estado == jogando) {
+        passartempo(&cronometro, dt);
         dificuldade = 1.0f + player.linha * 0.08f;
         if (dificuldade > 3.0f) {
             dificuldade = 3.0f;
         }
 
-        // Mundo agora recebe a dificuldade
-        World_Update(&world, dt, SCREEN_W, dificuldade);
-        Player_Update(&player, dt, TILE, SCREEN_W, SCREEN_H);
+        World_Update(&mundo, dt, largura, dificuldade);
+        Player_Update(&player, dt, tamanho, largura, altura);
 
-        // Câmera
-        if (player.box.y < 300.0f) {
-            cameraOffset.y = player.box.y - 300.0f;
-        }
-        if (cameraOffset.y > 0) cameraOffset.y = 0;
-
-        // Colisão ou tempo
-        if (World_CheckCollision(&world, player.box) || Timer_IsOver(&timer35)) {
-            state = STATE_GAMEOVER;
+        //camera
+        if (player.box.y < 300.0f){
+            deslocamentocamera.y = player.box.y - 300.0f;
         }
 
-        // Restart
+        if (deslocamentocamera.y > 0){
+            deslocamentocamera.y = 0;
+        }
+
+        if (checarcolisao(&mundo, player.box) || tempoesgotado(&cronometro)) {
+            estado = fimdejogo;
+        }
         if (IsKeyPressed(KEY_R)) {
-            ResetGame();
+            reiniciar();
         }
-    } else if (state == STATE_GAMEOVER) {
+
+    }else if(estado == fimdejogo){
         if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_R)) {
-            ResetGame();
+            reiniciar();
         }
     }
 }
 
-void Game_Draw(void) {
+void desenharcenario(void) {
     BeginDrawing();
     ClearBackground((Color){ 30, 30, 40, 255 });
-
-    World_Draw(&world, cameraOffset);
-    Player_Draw(&player, cameraOffset);
+    planodefundo(&mundo, deslocamentocamera);
+    personagem(&player, deslocamentocamera);
 
     // UI
-    DrawRectangle(0, 0, SCREEN_W, 40, (Color){0, 0, 0, 140});
+    DrawRectangle(0, 0, largura, 40, (Color){0, 0, 0, 140});
     char hud[128];
-    
-    snprintf(hud, sizeof(hud), "Tempo: %02d   |   Pontos: %d | Linha: %d",
-             (int)timer35.timeLeft, player.ponto, player.linha);
-             
+    snprintf(hud, sizeof(hud), "Tempo: %02d   |   Pontos: %d | Linha: %d", (int)cronometro.timeLeft, player.ponto, player.linha);   
     DrawText(hud, 16, 10, 20, RAYWHITE);
 
-    // Mostrar dificuldade atual (opcional, mas ajuda a ver se está funcionando)
-    char diffText[64];
-    snprintf(diffText, sizeof(diffText), "Dificuldade: %.2f", dificuldade);
-    DrawText(diffText, SCREEN_W - 230, 10, 20, YELLOW);
+    //printar a dificuldade
+    char textodificuldade[64];
+    snprintf(textodificuldade, sizeof(textodificuldade), "Dificuldade: %.2f", dificuldade);
+    DrawText(textodificuldade, largura - 230, 10, 20, YELLOW);
 
-    if (state == STATE_GAMEOVER) {
-        DrawRectangle(0, 0, SCREEN_W, SCREEN_H, (Color){0, 0, 0, 180});
+    //instruções para quando o jogo acaba
+    if (estado == fimdejogo) {
+        DrawRectangle(0, 0, largura, altura, (Color){0, 0, 0, 180});
         
-        const char *msg = "Game Over!";
-        int fw = MeasureText(msg, 40);
-        DrawText(msg, SCREEN_W/2 - fw/2, SCREEN_H/2 - 60, 40, RED);
+        const char *mensagem = "Game Over!";
+        int textomensagem = MeasureText(mensagem, 40);
+        DrawText(mensagem, largura/2 - textomensagem/2, altura/2 - 60, 40, RED);
 
-        char sc[128];
-        
-        snprintf(sc, sizeof(sc), "Distancia: %d linhas", player.ponto);
-        
-        int sw = MeasureText(sc, 24);
-        DrawText(sc, SCREEN_W/2 - sw/2, SCREEN_H/2 - 16, 24, RAYWHITE);
+        char pontuacao[128];
+        snprintf(pontuacao, sizeof(pontuacao), "Distancia: %d linhas", player.ponto);
+        int textopontuacao = MeasureText(pontuacao, 24);
+        DrawText(pontuacao, largura/2 - textopontuacao/2, altura/2 - 16, 24, RAYWHITE);
 
-        const char *hint = "[ENTER] ou [R] para reiniciar";
-        int hw = MeasureText(hint, 20);
-        DrawText(hint, SCREEN_W/2 - hw/2, SCREEN_H/2 + 20, 20, GRAY);
+        const char *instrucao = "[ENTER] ou [R] para reiniciar";
+        int textoinstrucao = MeasureText(instrucao, 20);
+        DrawText(instrucao, largura/2 - textoinstrucao/2, altura/2 + 20, 20, GRAY);
     }
-
     EndDrawing();
 }
 
-void Game_Unload(void) {
+void parar_de_rodar(void){
     if (IsAudioDeviceReady()) {
         CloseAudioDevice();
     }
     CloseWindow();
 }
 
-bool Game_ShouldClose(void) {
+bool fechar_jogo(void){
     return WindowShouldClose();
 }

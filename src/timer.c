@@ -1,11 +1,11 @@
 #include "timer.h"
 
-void Timer_Start(GameTimer *t, float seconds) {
-    t->timeLeft = seconds;
+void Timer_Start(timer *t, float segundos) {
+    t->timeLeft = segundos;
     t->running = true;
 }
 
-void Timer_Update(GameTimer *t, float dt) {
+void passartempo(timer *t, float dt) {
     if (!t->running) return;
     t->timeLeft -= dt;
     if (t->timeLeft < 0.0f) {
@@ -14,11 +14,11 @@ void Timer_Update(GameTimer *t, float dt) {
     }
 }
 
-void Timer_Reset(GameTimer *t, float seconds) {
-    t->timeLeft = seconds;
+void resettempo(timer *t, float segundos) {
+    t->timeLeft = segundos;
     t->running = true;
 }
 
-bool Timer_IsOver(const GameTimer *t) {
+bool tempoesgotado(const timer *t) {
     return !t->running || t->timeLeft <= 0.0f;
 }
