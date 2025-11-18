@@ -3,16 +3,18 @@
 
 #include "raylib.h"
 
-typedef struct jogador {
+typedef struct {
     Rectangle box;
-    int linha;
-    int maxlinha;
-    int ponto;
+    int row;
+    int maxRow;
+    int score;
     float moveCd;
-} Jogador;
+    Texture2D texture;  // 🐱 Textura do gato
+} Player;
 
-void Player_Init(Jogador *p, Vector2 startPos, float size);
-void Player_Update(Jogador *p, float dt, float tile, int screenW, int screenH);
-void personagem(const Jogador *p, Vector2 cameraOffset);
+void Player_Init(Player *p, Vector2 startPos, float size);
+void Player_Update(Player *p, float dt, float tile, int screenW, int screenH);
+void Player_Draw(const Player *p, Vector2 cameraOffset);
+void Player_Unload(Player *p);  // 🐱 Liberar textura
 
 #endif
