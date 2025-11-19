@@ -1,11 +1,14 @@
+// src/game.c
 #include "raylib.h"
 #include "player.h"
 #include "world.h"
 #include "timer.h"
 #include <stdio.h>
+#include <math.h>
+
 #define largura 800
 #define altura 600
-#define tamanho 48.0f
+#define TILE_SIZE 48.0f    /* evita conflito com mundo.tamanho */
 #define tempo 35.0f
 
 typedef enum {jogando, fimdejogo} estados;
@@ -18,10 +21,11 @@ static Vector2 deslocamentocamera = {0, 0};
 
 static float dificuldade = 1.0f;
 
-//inicializa o mundo novamente, voltando do estado inicial
+/* Inicializa o mundo e o jogador (estado inicial) */
 static void reiniciar(void) {
-    criarmundo(&mundo, largura, altura, tamanho); 
-    Player_Init(&player, (Vector2){ largura*0.5f - tamanho*0.5f, altura - tamanho }, tamanho);
+    criarmundo(&mundo, largura, altura, TILE_SIZE);
+    /* Coloca o jogador em uma posição visível (linha inicial) */
+    Player_Init(&player, (Vector2){ largura*0.5f - TILE_SIZE*0.5f, altura - TILE_SIZE * 4.0f }, TILE_SIZE);
     resettempo(&cronometro, tempo);
     estado = jogando;
     deslocamentocamera = (Vector2){0, 0};
@@ -36,39 +40,49 @@ void iniciarjogo(void) {
     reiniciar();
 }
 
-
 void atualizarjogo(void) {
     float dt = GetFrameTime();
+    if (dt > 0.05f) dt = 0.05f; /* proteção contra spikes */
+
     if (estado == jogando) {
         passartempo(&cronometro, dt);
         dificuldade = 1.0f + player.linha * 0.08f;
-        if (dificuldade > 3.0f) {
-            dificuldade = 3.0f;
-        }
+        if (dificuldade > 3.0f) dificuldade = 3.0f;
 
         World_Update(&mundo, dt, largura, dificuldade);
-        Player_Update(&player, dt, tamanho, largura, altura);
+        Player_Update(&player, dt, TILE_SIZE, largura, altura);
 
-        //camera
-        if (player.box.y < 300.0f){
-            deslocamentocamera.y = player.box.y - 300.0f;
+        /* CÂMERA: SEGUIMENTO IMEDIATO + CLAMP (corrige travamento nas linhas) */
+        const float CAM_TARGET_Y = (float)altura * 0.5f - TILE_SIZE * 0.5f; /* coloca jogador no centro vertical */
+        float targetOffsetY = player.box.y - CAM_TARGET_Y;
+
+        float worldHeight = (float)mundo.quantidadelinhas * mundo.tamanho;
+
+        if (worldHeight <= (float)altura) {
+            deslocamentocamera.y = 0.0f;
+        } else {
+            float maxNegativeScroll = - (worldHeight - (float)altura); /* valor negativo */
+            /* Clamp imediato, sem quantização */
+            if (targetOffsetY > 0.0f) targetOffsetY = 0.0f;
+            if (targetOffsetY < maxNegativeScroll) targetOffsetY = maxNegativeScroll;
+            deslocamentocamera.y = targetOffsetY;
         }
 
-        if (deslocamentocamera.y > 0){
-            deslocamentocamera.y = 0;
+        /* Proteção: garantir player dentro do mundo (baseado no mundo real) */
+        if (player.box.y < -100000.0f) player.box.y = -100000.0f; /* sanity */
+        if (worldHeight > player.box.height) {
+            if (player.box.y > worldHeight - player.box.height) player.box.y = worldHeight - player.box.height;
+        } else {
+            if (player.box.y > (float)altura - player.box.height) player.box.y = (float)altura - player.box.height;
         }
 
         if (checarcolisao(&mundo, player.box) || tempoesgotado(&cronometro)) {
             estado = fimdejogo;
         }
-        if (IsKeyPressed(KEY_R)) {
-            reiniciar();
-        }
+        if (IsKeyPressed(KEY_R)) reiniciar();
 
-    }else if(estado == fimdejogo){
-        if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_R)) {
-            reiniciar();
-        }
+    } else if (estado == fimdejogo) {
+        if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_R)) reiniciar();
     }
 }
 
@@ -78,21 +92,18 @@ void desenharcenario(void) {
     planodefundo(&mundo, deslocamentocamera);
     personagem(&player, deslocamentocamera);
 
-    // UI
+    /* UI */
     DrawRectangle(0, 0, largura, 40, (Color){0, 0, 0, 140});
     char hud[128];
-    snprintf(hud, sizeof(hud), "Tempo: %02d   |   Pontos: %d | Linha: %d", (int)cronometro.timeLeft, player.ponto, player.linha);   
+    snprintf(hud, sizeof(hud), "Tempo: %02d   |   Pontos: %d | Linha: %d", (int)cronometro.timeLeft, player.ponto, player.linha);
     DrawText(hud, 16, 10, 20, RAYWHITE);
 
-    //printar a dificuldade
     char textodificuldade[64];
     snprintf(textodificuldade, sizeof(textodificuldade), "Dificuldade: %.2f", dificuldade);
     DrawText(textodificuldade, largura - 230, 10, 20, YELLOW);
 
-    //instruções para quando o jogo acaba
     if (estado == fimdejogo) {
         DrawRectangle(0, 0, largura, altura, (Color){0, 0, 0, 180});
-        
         const char *mensagem = "Game Over!";
         int textomensagem = MeasureText(mensagem, 40);
         DrawText(mensagem, largura/2 - textomensagem/2, altura/2 - 60, 40, RED);
@@ -106,16 +117,24 @@ void desenharcenario(void) {
         int textoinstrucao = MeasureText(instrucao, 20);
         DrawText(instrucao, largura/2 - textoinstrucao/2, altura/2 + 20, 20, GRAY);
     }
+
     EndDrawing();
 }
 
-void parar_de_rodar(void){
-    if (IsAudioDeviceReady()) {
-        CloseAudioDevice();
+void parar_de_rodar(void) {
+    /* Se você adicionou sprite no Jogador, descarregue aqui.
+       Verifica se player.sprite existe (id != 0) antes de UnloadTexture. */
+#ifdef PLAYER_HAS_SPRITE
+    if (player.sprite.id != 0) {
+        UnloadTexture(player.sprite);
+        player.sprite = (Texture2D){0};
     }
+#endif
+
+    if (IsAudioDeviceReady()) CloseAudioDevice();
     CloseWindow();
 }
 
-bool fechar_jogo(void){
+bool fechar_jogo(void) {
     return WindowShouldClose();
 }
