@@ -3,7 +3,6 @@
 #include "world.h"
 #include "timer.h"
 #include <stdio.h>
-
 #define largura 800
 #define altura 600
 #define tamanho 48.0f
@@ -36,6 +35,7 @@ void iniciarjogo(void) {
     SetRandomSeed((unsigned int)GetTime());
     reiniciar();
 }
+
 
 void atualizarjogo(void) {
     float dt = GetFrameTime();
@@ -110,7 +110,6 @@ void desenharcenario(void) {
 }
 
 void parar_de_rodar(void){
-    Player_Unload(&player);  // 🐱 ADICIONE ESTA LINHA - Libera textura do gato
     if (IsAudioDeviceReady()) {
         CloseAudioDevice();
     }
