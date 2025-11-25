@@ -1,14 +1,11 @@
+#include "raylib.h"
 #ifndef WORLD_H
 #define WORLD_H
-
-#include "raylib.h"
-
 #define MAXFAIXAS 350
 
 typedef enum {
     calcada,
     estrada,
-    rio
 } TipoFaixa;
 
 typedef struct {
@@ -30,9 +27,7 @@ typedef struct {
 } Mundo;
 
 void criarmundo(Mundo *mundo, int largura, int altura, float tamanho);
-
 void atualizar_mundo(Mundo *mundo, float dt, int largura, float dificuldade);
 void planodefundo(const Mundo *mundo, Vector2 deslocamentocamera);
 bool checarcolisao(const Mundo *mundo, Rectangle retanguloJogador);
-
 #endif

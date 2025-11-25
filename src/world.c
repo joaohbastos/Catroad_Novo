@@ -1,12 +1,7 @@
-// src/world.c
 #include "world.h"
 #include "raylib.h"
 #include <stdio.h>
 #include <stdlib.h>
-
-/* Observação:
-   Este arquivo usa os valores de tela 800x600 para desenhar e checagens rápidas.
-   Se você mudar largura/altura em game.c, considere passar esses valores como parâmetros. */
 
 void criarmundo(Mundo *mundo, int largura, int altura, float tamanho) {
 
@@ -14,7 +9,6 @@ void criarmundo(Mundo *mundo, int largura, int altura, float tamanho) {
     mundo->quantidadelinhas = 0;
     mundo->dificuldadeatual = 1.0f;
 
-    /* Gerar até MAXFAIXAS linhas (ou até preencher) */
     for (int i = 0; i < MAXFAIXAS; i++) {
         Rua rua;
         rua.rect = (Rectangle){ 0.0f, (float)altura - (i + 1) * tamanho, (float)largura, tamanho };
@@ -26,7 +20,6 @@ void criarmundo(Mundo *mundo, int largura, int altura, float tamanho) {
         rua.espacoentrecarros = 0.0f;
 
         if (i % 2 == 0) {
-            /* estrada */
             rua.tipo = estrada;
             rua.cor = (Color){ 60, 60, 60, 255 };
 
@@ -34,7 +27,6 @@ void criarmundo(Mundo *mundo, int largura, int altura, float tamanho) {
             rua.temcarro = (GetRandomValue(0, 99) < 70);
 
             if (rua.temcarro) {
-                /* direção aleatória e posição inicial fora da tela */
                 if (GetRandomValue(0, 1) == 0) {
                     rua.posicaocarroX = -tamanho * (float)GetRandomValue(2, 4);
                     rua.velocidade = (float)GetRandomValue(120, 220);
@@ -45,21 +37,17 @@ void criarmundo(Mundo *mundo, int largura, int altura, float tamanho) {
 
                 rua.contagemcarros = GetRandomValue(1, 3);
 
-                /* espaco entre carros como float */
                 rua.espacoentrecarros = (float)GetRandomValue(200, 400);
-                /* garante espaçamento mínimo razoável */
-                if (rua.espacoentrecarros < mundo->tamanho * 1.2f) {
-                    rua.espacoentrecarros = mundo->tamanho * 1.2f;
+                if (rua.espacoentrecarros < mundo->tamanho * 1.5f) {
+                    rua.espacoentrecarros = mundo->tamanho * 1.5f;
                 }
             } else {
-                /* sem carros */
                 rua.contagemcarros = 0;
                 rua.velocidade = 0.0f;
                 rua.posicaocarroX = 0.0f;
                 rua.espacoentrecarros = 0.0f;
             }
         } else {
-            /* calçada */
             rua.tipo = calcada;
             rua.cor = (Color){ 130, 130, 130, 255 };
             rua.temcarro = false;
@@ -71,9 +59,6 @@ void criarmundo(Mundo *mundo, int largura, int altura, float tamanho) {
 
         mundo->faixas[mundo->quantidadelinhas] = rua;
         mundo->quantidadelinhas++;
-
-        /* Proteção: se a altura total gerada ficar absurda, sai do loop */
-        if ((i + 1) * tamanho > altura * 1000) break;
     }
 
     printf("Mundo criado com %d linhas (tile %.1f)\n", mundo->quantidadelinhas, mundo->tamanho);
@@ -86,10 +71,8 @@ void atualizar_mundo(Mundo *mundo, float dt, int largura, float dificuldade) {
         Rua *rua = &mundo->faixas[i];
 
         if (rua->tipo == estrada && rua->temcarro && rua->contagemcarros > 0) {
-            /* velocidade escala com dificuldade */
             float velocidadeAtual = rua->velocidade * dificuldade;
 
-            /* espaçamento efetivo com proteções */
             float espacamentoEfetivo = rua->espacoentrecarros;
             if (espacamentoEfetivo <= 0.0f) espacamentoEfetivo = mundo->tamanho * 1.2f;
 
@@ -121,8 +104,8 @@ void atualizar_mundo(Mundo *mundo, float dt, int largura, float dificuldade) {
 
 void planodefundo(const Mundo *mundo, Vector2 deslocamentocamera) {
 
-    const int screenWidth = 800;
-    const int screenHeight = 600;
+    const int screenWidth = 1200;
+    const int screenHeight = 720;
 
     for (int i = 0; i < mundo->quantidadelinhas; i++) {
         const Rua *rua = &mundo->faixas[i];
@@ -174,21 +157,11 @@ void planodefundo(const Mundo *mundo, Vector2 deslocamentocamera) {
                 }
             }
         } else if (rua->tipo == calcada) {
-            /* grama / calçada — decoração determinística sem RNG por frame */
             for (int x = 30; x < screenWidth; x += 90) {
                 int seed = (i * 37 + x) % 100;
                 if (seed > 60) {
                     DrawRectangle(x, drawRect.y + drawRect.height - 6, 2, 6, (Color){ 40, 120, 40, 255 });
                 }
-            }
-        } else if (rua->tipo == rio) {
-            /* exemplo simples para 'rio' — desenha azul e pequenas ondas */
-            for (int x = 0; x < screenWidth; x += 20) {
-                DrawRectangleRec((Rectangle){ (float)x, drawRect.y, 18, drawRect.height }, (Color){ 30, 144, 255, 255 });
-            }
-            /* ondas simples (determinísticas) */
-            for (int x = 0; x < screenWidth; x += 40) {
-                DrawCircle((float)x + 10.0f, drawRect.y + drawRect.height / 2.0f, 3.0f, (Color){ 180, 220, 255, 200 });
             }
         }
     }
@@ -198,8 +171,6 @@ bool checarcolisao(const Mundo *mundo, Rectangle retanguloJogador) {
 
     for (int i = 0; i < mundo->quantidadelinhas; i++) {
         const Rua *rua = &mundo->faixas[i];
-
-        /* primeiro filtro: overlap rápido entre player e a faixa */
         if (!CheckCollisionRecs(retanguloJogador, rua->rect)) continue;
 
         if (rua->tipo == estrada && rua->temcarro && rua->contagemcarros > 0) {
@@ -225,15 +196,7 @@ bool checarcolisao(const Mundo *mundo, Rectangle retanguloJogador) {
                     return true;
                 }
             }
-        } else if (rua->tipo == rio) {
-            /* exemplo: colisão com rio sempre considera perda */
-            /* se o jogador está sobre o rio, retornar true (pode adaptar) */
-            if (CheckCollisionRecs(retanguloJogador, rua->rect)) {
-                /* dependendo da mecânica, você pode querer tratar rio diferente */
-                return true;
-            }
-        }
+        } 
     }
-
     return false;
 }

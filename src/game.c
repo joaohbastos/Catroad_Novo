@@ -1,14 +1,12 @@
-// src/game.c
 #include "raylib.h"
 #include "player.h"
 #include "world.h"
 #include "timer.h"
 #include <stdio.h>
-#include <math.h>
 
-#define largura 800
-#define altura 600
-#define TILE_SIZE 48.0f    /* evita conflito com mundo.tamanho */
+#define largura 1200
+#define altura 720
+#define TILE_SIZE 48.0f
 #define tempo 35.0f
 
 typedef enum {jogando, fimdejogo} estados;
@@ -21,7 +19,6 @@ static Vector2 deslocamentocamera = {0, 0};
 
 static float dificuldade = 1.0f;
 
-/* Inicializa o mundo e o jogador (estado inicial) */
 static void reiniciar(void) {
     criarmundo(&mundo, largura, altura, TILE_SIZE);
     Player_Init(&player, (Vector2){ largura*0.5f - TILE_SIZE*0.5f, altura - TILE_SIZE * 4.0f }, TILE_SIZE);
@@ -29,7 +26,6 @@ static void reiniciar(void) {
     estado = jogando;
     deslocamentocamera = (Vector2){0, 0};
     dificuldade = 1.0f;
-    printf("🔄 Jogo reiniciado\n");
 }
 
 void iniciarjogo(void) {
@@ -49,7 +45,7 @@ void atualizarjogo(void) {
         if (dificuldade > 3.0f) dificuldade = 3.0f;
 
         atualizar_mundo(&mundo, dt, largura, dificuldade);
-        Player_Update(&player, dt, TILE_SIZE, largura, altura);
+        Player_Update(&player, TILE_SIZE, largura, altura);
 
         const float CAM_TARGET_Y = (float)altura * 0.5f - TILE_SIZE * 0.5f;
         float targetOffsetY = player.box.y - CAM_TARGET_Y;
@@ -62,10 +58,10 @@ void atualizarjogo(void) {
             float maxNegativeScroll = - (worldHeight - (float)altura);
             if (targetOffsetY > 0.0f) targetOffsetY = 0.0f;
             if (targetOffsetY < maxNegativeScroll) targetOffsetY = maxNegativeScroll;
-            deslocamentocamera.y = targetOffsetY;
+            float suavizacao = 0.20;
+            deslocamentocamera.y += (targetOffsetY - deslocamentocamera.y) * suavizacao;
         }
 
-        if (player.box.y < -100000.0f) player.box.y = -100000.0f;
         if (worldHeight > player.box.height) {
             if (player.box.y > worldHeight - player.box.height) player.box.y = worldHeight - player.box.height;
         } else {
@@ -90,7 +86,7 @@ void desenharcenario(void) {
 
     DrawRectangle(0, 0, largura, 40, (Color){0, 0, 0, 140});
     char hud[128];
-    snprintf(hud, sizeof(hud), "Tempo: %02d   |   Pontos: %d | Linha: %d", (int)cronometro.timeLeft, player.ponto, player.linha);
+    snprintf(hud, sizeof(hud), "Tempo: %02d   |   Distancia: %d  ", (int)cronometro.timeLeft, player.linha);
     DrawText(hud, 16, 10, 20, RAYWHITE);
 
     char textodificuldade[64];
@@ -104,7 +100,7 @@ void desenharcenario(void) {
         DrawText(mensagem, largura/2 - textomensagem/2, altura/2 - 60, 40, RED);
 
         char pontuacao[128];
-        snprintf(pontuacao, sizeof(pontuacao), "Distancia: %d linhas", player.ponto);
+        snprintf(pontuacao, sizeof(pontuacao), "Distancia: %d linhas", player.linha);
         int textopontuacao = MeasureText(pontuacao, 24);
         DrawText(pontuacao, largura/2 - textopontuacao/2, altura/2 - 16, 24, RAYWHITE);
 
@@ -123,9 +119,6 @@ void parar_de_rodar(void) {
         player.sprite = (Texture2D){0};
     }
 #endif
-
-    if (IsAudioDeviceReady()) CloseAudioDevice();
-    CloseWindow();
 }
 
 bool fechar_jogo(void) {
