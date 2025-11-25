@@ -9,7 +9,6 @@
    Se você mudar largura/altura em game.c, considere passar esses valores como parâmetros. */
 
 void criarmundo(Mundo *mundo, int largura, int altura, float tamanho) {
-    if (!mundo) return;
 
     mundo->tamanho = tamanho;
     mundo->quantidadelinhas = 0;
@@ -81,8 +80,6 @@ void criarmundo(Mundo *mundo, int largura, int altura, float tamanho) {
 }
 
 void atualizar_mundo(Mundo *mundo, float dt, int largura, float dificuldade) {
-    if (!mundo) return;
-
     mundo->dificuldadeatual = dificuldade;
 
     for (int i = 0; i < mundo->quantidadelinhas; i++) {
@@ -123,7 +120,6 @@ void atualizar_mundo(Mundo *mundo, float dt, int largura, float dificuldade) {
 }
 
 void planodefundo(const Mundo *mundo, Vector2 deslocamentocamera) {
-    if (!mundo) return;
 
     const int screenWidth = 800;
     const int screenHeight = 600;
@@ -199,7 +195,6 @@ void planodefundo(const Mundo *mundo, Vector2 deslocamentocamera) {
 }
 
 bool checarcolisao(const Mundo *mundo, Rectangle retanguloJogador) {
-    if (!mundo) return false;
 
     for (int i = 0; i < mundo->quantidadelinhas; i++) {
         const Rua *rua = &mundo->faixas[i];

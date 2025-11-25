@@ -24,7 +24,6 @@ static float dificuldade = 1.0f;
 /* Inicializa o mundo e o jogador (estado inicial) */
 static void reiniciar(void) {
     criarmundo(&mundo, largura, altura, TILE_SIZE);
-    /* Coloca o jogador em uma posição visível (linha inicial) */
     Player_Init(&player, (Vector2){ largura*0.5f - TILE_SIZE*0.5f, altura - TILE_SIZE * 4.0f }, TILE_SIZE);
     resettempo(&cronometro, tempo);
     estado = jogando;
@@ -52,8 +51,7 @@ void atualizarjogo(void) {
         atualizar_mundo(&mundo, dt, largura, dificuldade);
         Player_Update(&player, dt, TILE_SIZE, largura, altura);
 
-        /* CÂMERA: SEGUIMENTO IMEDIATO + CLAMP (corrige travamento nas linhas) */
-        const float CAM_TARGET_Y = (float)altura * 0.5f - TILE_SIZE * 0.5f; /* coloca jogador no centro vertical */
+        const float CAM_TARGET_Y = (float)altura * 0.5f - TILE_SIZE * 0.5f;
         float targetOffsetY = player.box.y - CAM_TARGET_Y;
 
         float worldHeight = (float)mundo.quantidadelinhas * mundo.tamanho;
@@ -61,15 +59,13 @@ void atualizarjogo(void) {
         if (worldHeight <= (float)altura) {
             deslocamentocamera.y = 0.0f;
         } else {
-            float maxNegativeScroll = - (worldHeight - (float)altura); /* valor negativo */
-            /* Clamp imediato, sem quantização */
+            float maxNegativeScroll = - (worldHeight - (float)altura);
             if (targetOffsetY > 0.0f) targetOffsetY = 0.0f;
             if (targetOffsetY < maxNegativeScroll) targetOffsetY = maxNegativeScroll;
             deslocamentocamera.y = targetOffsetY;
         }
 
-        /* Proteção: garantir player dentro do mundo (baseado no mundo real) */
-        if (player.box.y < -100000.0f) player.box.y = -100000.0f; /* sanity */
+        if (player.box.y < -100000.0f) player.box.y = -100000.0f;
         if (worldHeight > player.box.height) {
             if (player.box.y > worldHeight - player.box.height) player.box.y = worldHeight - player.box.height;
         } else {
@@ -92,7 +88,6 @@ void desenharcenario(void) {
     planodefundo(&mundo, deslocamentocamera);
     personagem(&player, deslocamentocamera);
 
-    /* UI */
     DrawRectangle(0, 0, largura, 40, (Color){0, 0, 0, 140});
     char hud[128];
     snprintf(hud, sizeof(hud), "Tempo: %02d   |   Pontos: %d | Linha: %d", (int)cronometro.timeLeft, player.ponto, player.linha);
