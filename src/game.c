@@ -3,52 +3,83 @@
 #include "world.h"
 #include "timer.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
 #define largura 1200
 #define altura 720
 #define TILE_SIZE 48.0f
 #define tempo 35.0f
 
-typedef enum {jogando, fimdejogo} estados;
+typedef enum { menu, jogando, fimdejogo } estados;
 
-static Jogador player;
+static Jogador *player = NULL;
 static Mundo mundo;
 static timer cronometro;
 static estados estado;
 static Vector2 deslocamentocamera = {0, 0};
-
 static float dificuldade = 1.0f;
+static int recorde = 0;
 
-static void reiniciar(void) {
+static void NovoJogo(void) {
+    if (player) {
+        Player_Destroy(player);
+        player = NULL;
+    }
     criarmundo(&mundo, largura, altura, TILE_SIZE);
-    Player_Init(&player, (Vector2){ largura*0.5f - TILE_SIZE*0.5f, altura - TILE_SIZE * 4.0f }, TILE_SIZE);
+    player = Player_Create(
+        (Vector2){ largura * 0.5f - TILE_SIZE * 0.5f, altura - TILE_SIZE * 4.0f },
+        TILE_SIZE
+    );
     resettempo(&cronometro, tempo);
-    estado = jogando;
     deslocamentocamera = (Vector2){0, 0};
     dificuldade = 1.0f;
+    estado = jogando;
 }
 
 void iniciarjogo(void) {
     InitWindow(largura, altura, "CatRoad - raylib");
     SetTargetFPS(60);
     SetRandomSeed((unsigned int)GetTime());
-    reiniciar();
+    recorde = Player_LoadHighscore();
+    mundo.faixas = NULL;
+    mundo.mapaTerreno = NULL;
+    mundo.quantidadelinhas = mundo.capacidade = mundo.colunasMatriz = 0;
+    player = NULL;
+    estado = menu;
 }
 
 void atualizarjogo(void) {
-    float dt = GetFrameTime();
+    static bool iniciou = false;
+
+    float dt = GetFrameTime();  
     if (dt > 0.05f) dt = 0.05f;
+
+    if (estado == menu) {
+        if (IsKeyPressed(KEY_ENTER)) {
+            NovoJogo();      // sua função que reinicia o jogo
+            iniciou = false; // zera o “primeiro frame”
+        }
+        return;
+    }
+
+    // Ignora o primeiro frame depois que o jogo entra em "jogando"
+    if (!iniciou) {
+        iniciou = true;
+        return;
+    }
 
     if (estado == jogando) {
         passartempo(&cronometro, dt);
-        dificuldade = 1.0f + player.linha * 0.08f;
+
+        dificuldade = 1.0f + player->linha * 0.08f;
         if (dificuldade > 3.0f) dificuldade = 3.0f;
 
         atualizar_mundo(&mundo, dt, largura, dificuldade);
-        Player_Update(&player, TILE_SIZE, largura, altura);
+        Player_Update(player, TILE_SIZE, largura, altura);
 
         const float CAM_TARGET_Y = (float)altura * 0.5f - TILE_SIZE * 0.5f;
-        float targetOffsetY = player.box.y - CAM_TARGET_Y;
+        float targetOffsetY = player->box.y - CAM_TARGET_Y;
 
         float worldHeight = (float)mundo.quantidadelinhas * mundo.tamanho;
 
@@ -58,67 +89,108 @@ void atualizarjogo(void) {
             float maxNegativeScroll = - (worldHeight - (float)altura);
             if (targetOffsetY > 0.0f) targetOffsetY = 0.0f;
             if (targetOffsetY < maxNegativeScroll) targetOffsetY = maxNegativeScroll;
-            float suavizacao = 0.20;
+
+            float suavizacao = 0.20f;
             deslocamentocamera.y += (targetOffsetY - deslocamentocamera.y) * suavizacao;
         }
 
-        if (worldHeight > player.box.height) {
-            if (player.box.y > worldHeight - player.box.height) player.box.y = worldHeight - player.box.height;
+        if (worldHeight > player->box.height) {
+            if (player->box.y > worldHeight - player->box.height)
+                player->box.y = worldHeight - player->box.height;
         } else {
-            if (player.box.y > (float)altura - player.box.height) player.box.y = (float)altura - player.box.height;
+            if (player->box.y > (float)altura - player->box.height)
+                player->box.y = (float)altura - player->box.height;
         }
 
-        if (checarcolisao(&mundo, player.box) || tempoesgotado(&cronometro)) {
+        if (checarcolisao(&mundo, player->box) || tempoesgotado(&cronometro)) {
             estado = fimdejogo;
+
+            if (player->linha > recorde) {
+                recorde = player->linha;
+                Player_SaveHighscore(recorde);
+            }
         }
-        if (IsKeyPressed(KEY_R)) reiniciar();
+
+        if (IsKeyPressed(KEY_R)) {
+            NovoJogo();
+            iniciou = false;
+        }
 
     } else if (estado == fimdejogo) {
-        if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_R)) reiniciar();
+        if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_R)) {
+            NovoJogo();
+            iniciou = false;
+        }
     }
 }
 
+
+
 void desenharcenario(void) {
     BeginDrawing();
-    ClearBackground((Color){ 30, 30, 40, 255 });
+    ClearBackground((Color){30, 30, 40, 255});
+
+    if (estado == menu) {
+        const char *titulo = "CatRoad";
+        const char *sub = "Pressione [ENTER] para comecar";
+        const char *info = "Use W A S D ou setas para se mover";
+
+        int tw = MeasureText(titulo, 60);
+        int sw = MeasureText(sub, 24);
+        int iw = MeasureText(info, 20);
+
+        DrawText(titulo, largura/2 - tw/2, altura/2 - 120, 60, RAYWHITE);
+        DrawText(sub, largura/2 - sw/2, altura/2 - 40, 24, YELLOW);
+        DrawText(info, largura/2 - iw/2, altura/2 + 10, 20, LIGHTGRAY);
+
+        char rec[64];
+        snprintf(rec, sizeof(rec), "Recorde atual: %d linhas", recorde);
+        int rw = MeasureText(rec, 20);
+        DrawText(rec, largura/2 - rw/2, altura/2 + 50, 20, GREEN);
+
+        EndDrawing();
+        return;
+    }
+
     planodefundo(&mundo, deslocamentocamera);
-    personagem(&player, deslocamentocamera);
+    personagem(player, deslocamentocamera);
 
     DrawRectangle(0, 0, largura, 40, (Color){0, 0, 0, 140});
     char hud[128];
-    snprintf(hud, sizeof(hud), "Tempo: %02d   |   Distancia: %d  ", (int)cronometro.timeLeft, player.linha);
+    snprintf(hud, sizeof(hud), "Tempo: %02d | Distancia: %d | Recorde: %d",
+             (int)cronometro.timeLeft, player->linha, recorde);
     DrawText(hud, 16, 10, 20, RAYWHITE);
 
-    char textodificuldade[64];
-    snprintf(textodificuldade, sizeof(textodificuldade), "Dificuldade: %.2f", dificuldade);
-    DrawText(textodificuldade, largura - 230, 10, 20, YELLOW);
+    char diff[64];
+    snprintf(diff, sizeof(diff), "Dificuldade: %.2f", dificuldade);
+    DrawText(diff, largura - 230, 10, 20, YELLOW);
 
     if (estado == fimdejogo) {
         DrawRectangle(0, 0, largura, altura, (Color){0, 0, 0, 180});
-        const char *mensagem = "Game Over!";
-        int textomensagem = MeasureText(mensagem, 40);
-        DrawText(mensagem, largura/2 - textomensagem/2, altura/2 - 60, 40, RED);
 
-        char pontuacao[128];
-        snprintf(pontuacao, sizeof(pontuacao), "Distancia: %d linhas", player.linha);
-        int textopontuacao = MeasureText(pontuacao, 24);
-        DrawText(pontuacao, largura/2 - textopontuacao/2, altura/2 - 16, 24, RAYWHITE);
+        const char *msg = "Game Over!";
+        int mw = MeasureText(msg, 40);
+        DrawText(msg, largura/2 - mw/2, altura/2 - 60, 40, RED);
 
-        const char *instrucao = "[ENTER] ou [R] para reiniciar";
-        int textoinstrucao = MeasureText(instrucao, 20);
-        DrawText(instrucao, largura/2 - textoinstrucao/2, altura/2 + 20, 20, GRAY);
+        char pont[128];
+        snprintf(pont, sizeof(pont), "Distancia: %d linhas", player->linha);
+        int pw = MeasureText(pont, 24);
+        DrawText(pont, largura/2 - pw/2, altura/2 - 16, 24, RAYWHITE);
+
+        const char *instr = "[ENTER] ou [R] para reiniciar";
+        int iw = MeasureText(instr, 20);
+        DrawText(instr, largura/2 - iw/2, altura/2 + 20, 20, GRAY);
     }
 
     EndDrawing();
 }
 
 void parar_de_rodar(void) {
-#ifdef PLAYER_HAS_SPRITE
-    if (player.sprite.id != 0) {
-        UnloadTexture(player.sprite);
-        player.sprite = (Texture2D){0};
+    if (player) {
+        Player_Destroy(player);
+        player = NULL;
     }
-#endif
+    liberarmundo(&mundo);
 }
 
 bool fechar_jogo(void) {

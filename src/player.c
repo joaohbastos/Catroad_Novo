@@ -1,11 +1,40 @@
 #include "player.h"
 #include "raylib.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 static const char *DEFAULT_SPRITE_PATH = "resources/cat.png";
 static const char *UPLOADED_SPRITE_PATH = "/mnt/data/94c4c162-4883-46ef-9714-199eec5663b4.png";
+static const char *SAVE_FILE = "highscore.txt";
 
-void Player_Init(Jogador *p, Vector2 startPos, float size) {
-    if (!p) return;
+/* ------------------------ FUNÇÕES INTERNAS ------------------------ */
+
+static void AlocarMatrizAnim(Jogador *p) {
+    p->linhasAnim = 2;
+    p->colunasAnim = 2;
+    p->matrizAnim = (int **)malloc(sizeof(int *) * p->linhasAnim);
+    for (int i = 0; i < p->linhasAnim; i++) {
+        p->matrizAnim[i] = (int *)malloc(sizeof(int) * p->colunasAnim);
+        for (int j = 0; j < p->colunasAnim; j++) {
+            p->matrizAnim[i][j] = (i == j) ? 1 : 0; // apenas simbólico
+        }
+    }
+}
+
+static void LiberarMatrizAnim(Jogador *p) {
+    if (!p || !p->matrizAnim) return;
+    for (int i = 0; i < p->linhasAnim; i++) {
+        free(p->matrizAnim[i]);
+    }
+    free(p->matrizAnim);
+    p->matrizAnim = NULL;
+}
+
+/* ------------------------ FUNÇÕES PÚBLICAS ------------------------ */
+
+Jogador *Player_Create(Vector2 startPos, float size) {
+    Jogador *p = (Jogador *)malloc(sizeof(Jogador));
+    if (!p) return NULL;
 
     p->box = (Rectangle){ startPos.x, startPos.y, size, size };
     p->linha = 0;
@@ -19,6 +48,22 @@ void Player_Init(Jogador *p, Vector2 startPos, float size) {
         }
     }
 #endif
+
+    AlocarMatrizAnim(p);
+    return p;
+}
+
+void Player_Destroy(Jogador *p) {
+    if (!p) return;
+
+#ifdef PLAYER_HAS_SPRITE
+    if (p->sprite.id != 0) {
+        UnloadTexture(p->sprite);
+    }
+#endif
+
+    LiberarMatrizAnim(p);
+    free(p);
 }
 
 void Player_Update(Jogador *p, float tile, int screenW, int screenH) {
@@ -102,4 +147,22 @@ void personagem(const Jogador *p, Vector2 cameraOffset) {
         }
     }
 #endif
+}
+
+/* ------------------------ ARQUIVO: SALVAR/LEITURA ------------------------ */
+
+void Player_SaveHighscore(int linha) {
+    FILE *f = fopen(SAVE_FILE, "w");
+    if (!f) return;
+    fprintf(f, "%d\n", linha);
+    fclose(f);
+}
+
+int Player_LoadHighscore(void) {
+    FILE *f = fopen(SAVE_FILE, "r");
+    if (!f) return 0;
+    int record = 0;
+    fscanf(f, "%d", &record);
+    fclose(f);
+    return record;
 }
