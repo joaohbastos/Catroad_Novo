@@ -122,8 +122,6 @@ void desenharcenario(void) {
 }
 
 void parar_de_rodar(void) {
-    /* Se você adicionou sprite no Jogador, descarregue aqui.
-       Verifica se player.sprite existe (id != 0) antes de UnloadTexture. */
 #ifdef PLAYER_HAS_SPRITE
     if (player.sprite.id != 0) {
         UnloadTexture(player.sprite);

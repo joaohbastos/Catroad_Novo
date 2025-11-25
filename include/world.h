@@ -31,7 +31,7 @@ typedef struct {
 
 void criarmundo(Mundo *mundo, int largura, int altura, float tamanho);
 
-void World_Update(Mundo *mundo, float dt, int largura, float dificuldade);
+void atualizar_mundo(Mundo *mundo, float dt, int largura, float dificuldade);
 void planodefundo(const Mundo *mundo, Vector2 deslocamentocamera);
 bool checarcolisao(const Mundo *mundo, Rectangle retanguloJogador);
 
