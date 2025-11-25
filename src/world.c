@@ -80,7 +80,7 @@ void criarmundo(Mundo *mundo, int largura, int altura, float tamanho) {
     printf("Mundo criado com %d linhas (tile %.1f)\n", mundo->quantidadelinhas, mundo->tamanho);
 }
 
-void atuaizar_mundo(Mundo *mundo, float dt, int largura, float dificuldade) {
+void atualizar_mundo(Mundo *mundo, float dt, int largura, float dificuldade) {
     if (!mundo) return;
 
     mundo->dificuldadeatual = dificuldade;

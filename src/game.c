@@ -42,14 +42,14 @@ void iniciarjogo(void) {
 
 void atualizarjogo(void) {
     float dt = GetFrameTime();
-    if (dt > 0.05f) dt = 0.05f; /* proteção contra spikes */
+    if (dt > 0.05f) dt = 0.05f;
 
     if (estado == jogando) {
         passartempo(&cronometro, dt);
         dificuldade = 1.0f + player.linha * 0.08f;
         if (dificuldade > 3.0f) dificuldade = 3.0f;
 
-        World_Update(&mundo, dt, largura, dificuldade);
+        atualizar_mundo(&mundo, dt, largura, dificuldade);
         Player_Update(&player, dt, TILE_SIZE, largura, altura);
 
         /* CÂMERA: SEGUIMENTO IMEDIATO + CLAMP (corrige travamento nas linhas) */
