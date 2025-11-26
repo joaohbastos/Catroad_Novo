@@ -6,7 +6,6 @@ int main(void) {
         atualizarjogo();
         desenharcenario();
     }
-
     parar_de_rodar(); 
     return 0;
 }

@@ -10,6 +10,7 @@ void liberarcarro(Carro *c) {
         c = n;
     }
 }
+
 void liberarmundo(Mundo *m) {
     if (m->faixas) {
         for (int i = 0; i < m->quantidadelinhas; i++)
@@ -25,6 +26,7 @@ void liberarmundo(Mundo *m) {
     }
     m->quantidadelinhas = m->capacidade = m->colunasmatriz = 0;
 }
+
 void criarmundo(Mundo *m, int largura, int altura, float tamanho) {
     liberarmundo(m);
     m->tamanho = tamanho;
@@ -32,14 +34,13 @@ void criarmundo(Mundo *m, int largura, int altura, float tamanho) {
     m->capacidade = MAXFAIXAS;
     m->colunasmatriz = 2;
     m->faixas = malloc(sizeof(Rua) * m->capacidade);
-    m->mapa= malloc(sizeof(int *) * m->capacidade);
+    m->mapa = malloc(sizeof(int *) * m->capacidade);
     for (int i = 0; i < m->capacidade; i++) {
         m->mapa[i] = malloc(sizeof(int) * m->colunasmatriz);
         Rua r = {0};
         r.rect = (Rectangle){0, (float)altura - (i + 1) * tamanho, (float)largura, tamanho};
         r.cor = (Color){130, 130, 130, 255};
         r.tipo = calcada;
-
         if (i % 2 == 0) {
             r.tipo = estrada;
             r.cor = (Color){60, 60, 60, 255};
@@ -47,16 +48,18 @@ void criarmundo(Mundo *m, int largura, int altura, float tamanho) {
             if (r.temcarro) {
                 if (GetRandomValue(0, 1) == 0) {
                     r.posicaocarroX = -tamanho * (float)GetRandomValue(2, 4);
-                    r.velocidade = (float)GetRandomValue(130, 200);
+                    r.velocidade = (float)GetRandomValue(200, 250);
                 } else {
                     r.posicaocarroX = (float)largura + tamanho * (float)GetRandomValue(2, 4);
-                    r.velocidade = -(float)GetRandomValue(130, 200);
+                    r.velocidade = -(float)GetRandomValue(200, 250);
                 }
                 r.contagemcarros = GetRandomValue(1, 3);
                 r.espacoentrecarros = (float)GetRandomValue(300, 500);
-                if (r.espacoentrecarros < m->tamanho * 2.5f)
+                
+                if (r.espacoentrecarros < m->tamanho * 2.5f) {
                     r.espacoentrecarros = m->tamanho * 2.5f;
-
+                }
+                
                 for (int c = r.contagemcarros - 1; c >= 0; c--) {
                     Carro *nc = malloc(sizeof(Carro));
                     nc->indice = c;
@@ -66,12 +69,20 @@ void criarmundo(Mundo *m, int largura, int altura, float tamanho) {
             }
         }
         m->faixas[i] = r;
-        m->mapa[i][0] = (r.tipo == estrada);
-        m->mapa[i][1] = (r.temcarro ? 1 : 0);
+        if (r.tipo == estrada) {
+            m->mapa[i][0] = 1;
+        } else {
+            m->mapa[i][0] = 0;
+        }
+        if (r.temcarro) {
+            m->mapa[i][1] = 1;
+        } else {
+            m->mapa[i][1] = 0;
+        }
         m->quantidadelinhas++;
     }
-
 }
+
 float Espacamento(const Mundo *m, const Rua *r) {
     float e = r->espacoentrecarros;
     if (e <= 0) e = m->tamanho * 1.2f;
@@ -83,17 +94,12 @@ float Espacamento(const Mundo *m, const Rua *r) {
 }
 
 void atualizar_mundo(Mundo *m, float frametime, int largura, float dificuldade) {
-    frametime = 0.05f;
     m->dificuldadeatual = dificuldade;
-
     for (int i = 0; i < m->quantidadelinhas; i++) {
         Rua *r = &m->faixas[i];
-        if (r->tipo != estrada || !r->temcarro || r->contagemcarros <= 0) continue;
-
         float esp = Espacamento(m, r);
         r->posicaocarroX += r->velocidade * dificuldade * frametime;
         float comboio = (r->contagemcarros - 1) * esp + m->tamanho * 2.0f;
-
         if (r->velocidade > 0 && r->posicaocarroX > (float)largura + comboio)
             r->posicaocarroX = -comboio;
         else if (r->velocidade < 0 && r->posicaocarroX < -comboio)
@@ -102,8 +108,8 @@ void atualizar_mundo(Mundo *m, float frametime, int largura, float dificuldade) 
 }
 
 void planodefundo(const Mundo *m, Vector2 cam) {
-    const int W = 1200, H = 720;
-
+    const int W = 1200;
+    const int H = 720;
     for (int i = 0; i < m->quantidadelinhas; i++) {
         const Rua *r = &m->faixas[i];
         Rectangle dr = r->rect;
@@ -141,6 +147,7 @@ void planodefundo(const Mundo *m, Vector2 cam) {
 bool checarcolisao(const Mundo *m, Rectangle player) {
     for (int i = 0; i < m->quantidadelinhas; i++) {
         const Rua *r = &m->faixas[i];
+        
         if (!CheckCollisionRecs(player, r->rect)) continue;
         if (!m->mapa[i][0] || !m->mapa[i][1] || r->contagemcarros <= 0) continue;
 

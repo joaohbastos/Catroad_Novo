@@ -37,7 +37,7 @@ void NovoJogo(void) {
 }
 
 void iniciarjogo(void) {
-    InitWindow(LARGURA_TELA, ALTURA_TELA, "CatRoad - raylib");
+    InitWindow(LARGURA_TELA, ALTURA_TELA, "CatRoad - Radar Edition");
     SetTargetFPS(60);
     SetRandomSeed((unsigned int)GetTime());
     recorde = carregar_recorde();
@@ -51,7 +51,6 @@ void iniciarjogo(void) {
 void atualizarjogo(void) {
     static bool iniciou = false;
     float frametime = GetFrameTime();  
-    if (frametime > 0.05f) frametime = 0.05f;
     if (estado == menu) {
         if (IsKeyPressed(KEY_ENTER)) {
             NovoJogo();
@@ -71,11 +70,11 @@ void atualizarjogo(void) {
         
         atualizar_mundo(&mundo, frametime, LARGURA_TELA, dificuldade);
         movimentacao(player, TILE_SIZE, LARGURA_TELA, ALTURA_TELA);
+        atualizar_radar(player, &mundo, TILE_SIZE); 
 
         float CAM_TARGET_Y = (float)ALTURA_TELA * 0.5f - TILE_SIZE * 0.5f;
         float targetOffsetY = player->box.y - CAM_TARGET_Y;
         float worldHeight = (float)mundo.quantidadelinhas * mundo.tamanho;
-
         if (worldHeight <= (float)ALTURA_TELA) {
             deslocamentocamera.y = 0.0f;
         } else {
@@ -85,6 +84,7 @@ void atualizarjogo(void) {
             float suavizacao = 0.20f;
             deslocamentocamera.y += (targetOffsetY - deslocamentocamera.y) * suavizacao;
         }
+        
         if (worldHeight > player->box.altura) {
             if (player->box.y > worldHeight - player->box.altura)
                 player->box.y = worldHeight - player->box.altura;
@@ -111,7 +111,6 @@ void atualizarjogo(void) {
 void desenharcenario(void) {
     BeginDrawing();
     ClearBackground((Color){30, 30, 40, 255});
-    
     if (estado == menu) {
         char *titulo = "CatRoad";
         char *sub = "Pressione [ENTER] para comecar";

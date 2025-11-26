@@ -1,44 +1,43 @@
 #ifndef WORLD_H
 #define WORLD_H
-#include <raylib.h>
-#include <stdbool.h>
-#define MAXFAIXAS 350
+
+#include "raylib.h"
+
+#define MAXFAIXAS 100
 
 typedef struct Carro {
     int indice;
-    struct Carro *proximo; 
+    struct Carro *proximo;
 } Carro;
 
-typedef enum {
-    calcada,
-    estrada
-} TipoFaixa;
+typedef enum { estrada, calcada } TipoRua;
 
 typedef struct {
-    TipoFaixa tipo;
     Rectangle rect;
+    Color cor;
+    TipoRua tipo;
     bool temcarro;
-    int contagemcarros;
     float posicaocarroX;
     float velocidade;
+    int contagemcarros;
     float espacoentrecarros;
-    Color cor;
     Carro *listaCarros;
 } Rua;
 
-typedef struct {
+typedef struct Mundo {
     Rua *faixas;
+    int **mapa;
     int quantidadelinhas;
-    int capacidade;  
+    int capacidade;
+    int colunasmatriz;
     float tamanho;
     float dificuldadeatual;
-    int **mapa;
-    int colunasmatriz;
 } Mundo;
 
-void criarmundo(Mundo *mundo, int largura, int altura, float tamanho);
-void atualizar_mundo(Mundo *mundo, float frametime, int largura, float dificuldade);
-void planodefundo(const Mundo *mundo, Vector2 deslocamentocamera);
-bool checarcolisao(const Mundo *mundo, Rectangle retanguloJogador);
-void liberarmundo(Mundo *mundo);
+void liberarmundo(Mundo *m);
+void criarmundo(Mundo *m, int largura, int altura, float tamanho);
+void atualizar_mundo(Mundo *m, float frametime, int largura, float dificuldade);
+void planodefundo(const Mundo *m, Vector2 cam);
+bool checarcolisao(const Mundo *m, Rectangle player);
+
 #endif
