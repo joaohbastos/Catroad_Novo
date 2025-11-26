@@ -7,7 +7,7 @@ typedef struct {
     bool running;
 } timer;
 
-void passartempo(timer *t, float dt);
+void passartempo(timer *t, float frametime);
 void resettempo(timer *t, float seconds);
 bool tempoesgotado(const timer *t);
 #endif

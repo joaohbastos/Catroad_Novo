@@ -23,18 +23,18 @@ void liberarmundo(Mundo *m) {
         free(m->mapa);
         m->mapa = NULL;
     }
-    m->quantidadelinhas = m->capacidade = m->colunasMatriz = 0;
+    m->quantidadelinhas = m->capacidade = m->colunasmatriz = 0;
 }
 void criarmundo(Mundo *m, int largura, int altura, float tamanho) {
     liberarmundo(m);
     m->tamanho = tamanho;
     m->dificuldadeatual = 1.0f;
     m->capacidade = MAXFAIXAS;
-    m->colunasMatriz = 2;
+    m->colunasmatriz = 2;
     m->faixas = malloc(sizeof(Rua) * m->capacidade);
     m->mapa= malloc(sizeof(int *) * m->capacidade);
     for (int i = 0; i < m->capacidade; i++) {
-        m->mapa[i] = malloc(sizeof(int) * m->colunasMatriz);
+        m->mapa[i] = malloc(sizeof(int) * m->colunasmatriz);
         Rua r = {0};
         r.rect = (Rectangle){0, (float)altura - (i + 1) * tamanho, (float)largura, tamanho};
         r.cor = (Color){130, 130, 130, 255};
@@ -82,8 +82,8 @@ float Espacamento(const Mundo *m, const Rua *r) {
     return e;
 }
 
-void atualizar_mundo(Mundo *m, float dt, int largura, float dificuldade) {
-    dt = 0.05f;
+void atualizar_mundo(Mundo *m, float frametime, int largura, float dificuldade) {
+    frametime = 0.05f;
     m->dificuldadeatual = dificuldade;
 
     for (int i = 0; i < m->quantidadelinhas; i++) {
@@ -91,7 +91,7 @@ void atualizar_mundo(Mundo *m, float dt, int largura, float dificuldade) {
         if (r->tipo != estrada || !r->temcarro || r->contagemcarros <= 0) continue;
 
         float esp = Espacamento(m, r);
-        r->posicaocarroX += r->velocidade * dificuldade * dt;
+        r->posicaocarroX += r->velocidade * dificuldade * frametime;
         float comboio = (r->contagemcarros - 1) * esp + m->tamanho * 2.0f;
 
         if (r->velocidade > 0 && r->posicaocarroX > (float)largura + comboio)
@@ -108,13 +108,13 @@ void planodefundo(const Mundo *m, Vector2 cam) {
         const Rua *r = &m->faixas[i];
         Rectangle dr = r->rect;
         dr.y -= cam.y;
-        if (dr.y + dr.height < 0 || dr.y > H) continue;
+        if (dr.y + dr.altura < 0 || dr.y > H) continue;
 
         DrawRectangleRec(dr, r->cor);
 
         if (m->mapa[i][0]) {
             for (int x = 40; x < W; x += 80)
-                DrawRectangle(x, dr.y + dr.height / 2 - 1, 30, 2, YELLOW);
+                DrawRectangle(x, dr.y + dr.altura / 2 - 1, 30, 2, YELLOW);
 
             if (m->mapa[i][1] && r->contagemcarros > 0) {
                 float esp = Espacamento(m, r);
@@ -125,14 +125,14 @@ void planodefundo(const Mundo *m, Vector2 cam) {
                     Rectangle car = { x, dr.y + 2, m->tamanho * 1.8f, m->tamanho - 4 };
                     Color cores[] = { RED, BLUE, GREEN, PURPLE, ORANGE, DARKGRAY };
                     DrawRectangleRec(car, cores[i % 6]);
-                    DrawRectangle(car.x + 5, car.y + 5, car.width - 10, 8,
+                    DrawRectangle(car.x + 5, car.y + 5, car.largura - 10, 8,
                                   (Color){200, 200, 200, 255});
                 }
             }
         } else {
             for (int x = 30; x < W; x += 90)
                 if (((i * 37 + x) % 100) > 60)
-                    DrawRectangle(x, dr.y + dr.height - 6, 2, 6,
+                    DrawRectangle(x, dr.y + dr.altura - 6, 2, 6,
                                   (Color){40, 120, 40, 255});
         }
     }

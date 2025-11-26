@@ -5,9 +5,9 @@ void Timer_Start(timer *t, float segundos) {
     t->running = true;
 }
 
-void passartempo(timer *t, float dt) {
+void passartempo(timer *t, float frametime) {
     if (!t->running) return;
-    t->timeLeft -= dt;
+    t->timeLeft -= frametime;
     if (t->timeLeft < 0.0f) {
         t->timeLeft = 0.0f;
         t->running = false;

@@ -10,14 +10,14 @@ typedef struct {
 #ifdef GATO
     Texture2D sprite;
 #endif
-    int **matrizAnim;
-    int linhasAnim;
-    int colunasAnim;
+    int **matriz;
+    int linhas;
+    int colunas;
 } Jogador;
 
 Jogador *criargato(Vector2 startPos, float size);
 
-void Player_Update(Jogador *p, float tile, int screenW, int screenH);
+void movimentacao(Jogador *p, float tile, int largura, int altura);
 void personagem(const Jogador *p, Vector2 cameraOffset);
 void salvar_recorde(int linha);
 int carregar_recorde(void);

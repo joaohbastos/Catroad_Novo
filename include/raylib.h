@@ -254,15 +254,15 @@ typedef struct Color {
 typedef struct Rectangle {
     float x;                // Rectangle top-left corner position x
     float y;                // Rectangle top-left corner position y
-    float width;            // Rectangle width
-    float height;           // Rectangle height
+    float largura;            // Rectangle width
+    float altura;           // Rectangle height
 } Rectangle;
 
 // Image, pixel data stored in CPU memory (RAM)
 typedef struct Image {
     void *data;             // Image raw data
-    int width;              // Image base width
-    int height;             // Image base height
+    int largura;              // Image base width
+    int altura;             // Image base height
     int mipmaps;            // Mipmap levels, 1 by default
     int format;             // Data format (PixelFormat type)
 } Image;
@@ -270,8 +270,8 @@ typedef struct Image {
 // Texture, tex data stored in GPU memory (VRAM)
 typedef struct Texture {
     unsigned int id;        // OpenGL texture id
-    int width;              // Texture base width
-    int height;             // Texture base height
+    int largura;              // Texture base width
+    int altura;             // Texture base height
     int mipmaps;            // Mipmap levels, 1 by default
     int format;             // Data format (PixelFormat type)
 } Texture;
@@ -969,7 +969,7 @@ extern "C" {            // Prevents name mangling of functions
 #endif
 
 // Window-related functions
-RLAPI void InitWindow(int width, int height, const char *title);  // Initialize window and OpenGL context
+RLAPI void InitWindow(int largura, int altura, const char *title);  // Initialize window and OpenGL context
 RLAPI void CloseWindow(void);                                     // Close window and unload OpenGL context
 RLAPI bool WindowShouldClose(void);                               // Check if application should close (KEY_ESCAPE pressed or windows close icon clicked)
 RLAPI bool IsWindowReady(void);                                   // Check if window has been initialized successfully
@@ -992,9 +992,9 @@ RLAPI void SetWindowIcons(Image *images, int count);              // Set icon fo
 RLAPI void SetWindowTitle(const char *title);                     // Set title for window
 RLAPI void SetWindowPosition(int x, int y);                       // Set window position on screen
 RLAPI void SetWindowMonitor(int monitor);                         // Set monitor for the current window
-RLAPI void SetWindowMinSize(int width, int height);               // Set window minimum dimensions (for FLAG_WINDOW_RESIZABLE)
-RLAPI void SetWindowMaxSize(int width, int height);               // Set window maximum dimensions (for FLAG_WINDOW_RESIZABLE)
-RLAPI void SetWindowSize(int width, int height);                  // Set window dimensions
+RLAPI void SetWindowMinSize(int largura, int altura);               // Set window minimum dimensions (for FLAG_WINDOW_RESIZABLE)
+RLAPI void SetWindowMaxSize(int largura, int altura);               // Set window maximum dimensions (for FLAG_WINDOW_RESIZABLE)
+RLAPI void SetWindowSize(int largura, int altura);                  // Set window dimensions
 RLAPI void SetWindowOpacity(float opacity);                       // Set window opacity [0.0f..1.0f]
 RLAPI void SetWindowFocused(void);                                // Set window focused
 RLAPI void *GetWindowHandle(void);                                // Get native window handle
@@ -1041,7 +1041,7 @@ RLAPI void BeginShaderMode(Shader shader);                        // Begin custo
 RLAPI void EndShaderMode(void);                                   // End custom shader drawing (use default shader)
 RLAPI void BeginBlendMode(int mode);                              // Begin blending mode (alpha, additive, multiplied, subtract, custom)
 RLAPI void EndBlendMode(void);                                    // End blending mode (reset to default: alpha blending)
-RLAPI void BeginScissorMode(int x, int y, int width, int height); // Begin scissor mode (define screen area for following drawing)
+RLAPI void BeginScissorMode(int x, int y, int largura, int altura); // Begin scissor mode (define screen area for following drawing)
 RLAPI void EndScissorMode(void);                                  // End scissor mode
 RLAPI void BeginVrStereoMode(VrStereoConfig config);              // Begin stereo rendering (requires VR simulator)
 RLAPI void EndVrStereoMode(void);                                 // End stereo rendering (requires VR simulator)
@@ -1066,9 +1066,9 @@ RLAPI void UnloadShader(Shader shader);                                    // Un
 // Screen-space-related functions
 #define GetMouseRay GetScreenToWorldRay     // Compatibility hack for previous raylib versions
 RLAPI Ray GetScreenToWorldRay(Vector2 position, Camera camera);         // Get a ray trace from screen position (i.e mouse)
-RLAPI Ray GetScreenToWorldRayEx(Vector2 position, Camera camera, int width, int height); // Get a ray trace from screen position (i.e mouse) in a viewport
+RLAPI Ray GetScreenToWorldRayEx(Vector2 position, Camera camera, int largura, int altura); // Get a ray trace from screen position (i.e mouse) in a viewport
 RLAPI Vector2 GetWorldToScreen(Vector3 position, Camera camera);        // Get the screen space position for a 3d world space position
-RLAPI Vector2 GetWorldToScreenEx(Vector3 position, Camera camera, int width, int height); // Get size position for a 3d world space position
+RLAPI Vector2 GetWorldToScreenEx(Vector3 position, Camera camera, int largura, int altura); // Get size position for a 3d world space position
 RLAPI Vector2 GetWorldToScreen2D(Vector2 position, Camera2D camera);    // Get the screen space position for a 2d camera world space position
 RLAPI Vector2 GetScreenToWorld2D(Vector2 position, Camera2D camera);    // Get the world space position for a 2d camera screen space position
 RLAPI Matrix GetCameraMatrix(Camera camera);                            // Get camera transform matrix (view matrix)
@@ -1276,14 +1276,14 @@ RLAPI void DrawEllipseLines(int centerX, int centerY, float radiusH, float radiu
 RLAPI void DrawEllipseLinesV(Vector2 center, float radiusH, float radiusV, Color color);                 // Draw ellipse outline (Vector version)
 RLAPI void DrawRing(Vector2 center, float innerRadius, float outerRadius, float startAngle, float endAngle, int segments, Color color); // Draw ring
 RLAPI void DrawRingLines(Vector2 center, float innerRadius, float outerRadius, float startAngle, float endAngle, int segments, Color color);    // Draw ring outline
-RLAPI void DrawRectangle(int posX, int posY, int width, int height, Color color);                        // Draw a color-filled rectangle
+RLAPI void DrawRectangle(int posX, int posY, int largura, int altura, Color color);                        // Draw a color-filled rectangle
 RLAPI void DrawRectangleV(Vector2 position, Vector2 size, Color color);                                  // Draw a color-filled rectangle (Vector version)
 RLAPI void DrawRectangleRec(Rectangle rec, Color color);                                                 // Draw a color-filled rectangle
 RLAPI void DrawRectanglePro(Rectangle rec, Vector2 origin, float rotation, Color color);                 // Draw a color-filled rectangle with pro parameters
-RLAPI void DrawRectangleGradientV(int posX, int posY, int width, int height, Color top, Color bottom);   // Draw a vertical-gradient-filled rectangle
-RLAPI void DrawRectangleGradientH(int posX, int posY, int width, int height, Color left, Color right);   // Draw a horizontal-gradient-filled rectangle
+RLAPI void DrawRectangleGradientV(int posX, int posY, int largura, int altura, Color top, Color bottom);   // Draw a vertical-gradient-filled rectangle
+RLAPI void DrawRectangleGradientH(int posX, int posY, int largura, int altura, Color left, Color right);   // Draw a horizontal-gradient-filled rectangle
 RLAPI void DrawRectangleGradientEx(Rectangle rec, Color topLeft, Color bottomLeft, Color bottomRight, Color topRight); // Draw a gradient-filled rectangle with custom vertex colors
-RLAPI void DrawRectangleLines(int posX, int posY, int width, int height, Color color);                   // Draw rectangle outline
+RLAPI void DrawRectangleLines(int posX, int posY, int largura, int altura, Color color);                   // Draw rectangle outline
 RLAPI void DrawRectangleLinesEx(Rectangle rec, float lineThick, Color color);                            // Draw rectangle outline with extended parameters
 RLAPI void DrawRectangleRounded(Rectangle rec, float roundness, int segments, Color color);              // Draw rectangle with rounded edges
 RLAPI void DrawRectangleRoundedLines(Rectangle rec, float roundness, int segments, Color color);         // Draw rectangle lines with rounded edges
@@ -1335,7 +1335,7 @@ RLAPI Rectangle GetCollisionRec(Rectangle rec1, Rectangle rec2);                
 // Image loading functions
 // NOTE: These functions do not require GPU access
 RLAPI Image LoadImage(const char *fileName);                                                             // Load image from file into CPU memory (RAM)
-RLAPI Image LoadImageRaw(const char *fileName, int width, int height, int format, int headerSize);       // Load image from RAW file data
+RLAPI Image LoadImageRaw(const char *fileName, int largura, int altura, int format, int headerSize);       // Load image from RAW file data
 RLAPI Image LoadImageAnim(const char *fileName, int *frames);                                            // Load image sequence from file (frames appended to image.data)
 RLAPI Image LoadImageAnimFromMemory(const char *fileType, const unsigned char *fileData, int dataSize, int *frames); // Load image sequence from memory buffer
 RLAPI Image LoadImageFromMemory(const char *fileType, const unsigned char *fileData, int dataSize);      // Load image from memory buffer, fileType refers to extension: i.e. '.png'
@@ -1348,15 +1348,15 @@ RLAPI unsigned char *ExportImageToMemory(Image image, const char *fileType, int 
 RLAPI bool ExportImageAsCode(Image image, const char *fileName);                                         // Export image as code file defining an array of bytes, returns true on success
 
 // Image generation functions
-RLAPI Image GenImageColor(int width, int height, Color color);                                           // Generate image: plain color
-RLAPI Image GenImageGradientLinear(int width, int height, int direction, Color start, Color end);        // Generate image: linear gradient, direction in degrees [0..360], 0=Vertical gradient
-RLAPI Image GenImageGradientRadial(int width, int height, float density, Color inner, Color outer);      // Generate image: radial gradient
-RLAPI Image GenImageGradientSquare(int width, int height, float density, Color inner, Color outer);      // Generate image: square gradient
-RLAPI Image GenImageChecked(int width, int height, int checksX, int checksY, Color col1, Color col2);    // Generate image: checked
-RLAPI Image GenImageWhiteNoise(int width, int height, float factor);                                     // Generate image: white noise
-RLAPI Image GenImagePerlinNoise(int width, int height, int offsetX, int offsetY, float scale);           // Generate image: perlin noise
-RLAPI Image GenImageCellular(int width, int height, int tileSize);                                       // Generate image: cellular algorithm, bigger tileSize means bigger cells
-RLAPI Image GenImageText(int width, int height, const char *text);                                       // Generate image: grayscale image from text data
+RLAPI Image GenImageColor(int largura, int altura, Color color);                                           // Generate image: plain color
+RLAPI Image GenImageGradientLinear(int largura, int altura, int direction, Color start, Color end);        // Generate image: linear gradient, direction in degrees [0..360], 0=Vertical gradient
+RLAPI Image GenImageGradientRadial(int largura, int altura, float density, Color inner, Color outer);      // Generate image: radial gradient
+RLAPI Image GenImageGradientSquare(int largura, int altura, float density, Color inner, Color outer);      // Generate image: square gradient
+RLAPI Image GenImageChecked(int largura, int altura, int checksX, int checksY, Color col1, Color col2);    // Generate image: checked
+RLAPI Image GenImageWhiteNoise(int largura, int altura, float factor);                                     // Generate image: white noise
+RLAPI Image GenImagePerlinNoise(int largura, int altura, int offsetX, int offsetY, float scale);           // Generate image: perlin noise
+RLAPI Image GenImageCellular(int largura, int altura, int tileSize);                                       // Generate image: cellular algorithm, bigger tileSize means bigger cells
+RLAPI Image GenImageText(int largura, int altura, const char *text);                                       // Generate image: grayscale image from text data
 
 // Image manipulation functions
 RLAPI Image ImageCopy(Image image);                                                                      // Create an image duplicate (useful for transformations)
@@ -1408,7 +1408,7 @@ RLAPI void ImageDrawCircle(Image *dst, int centerX, int centerY, int radius, Col
 RLAPI void ImageDrawCircleV(Image *dst, Vector2 center, int radius, Color color);                        // Draw a filled circle within an image (Vector version)
 RLAPI void ImageDrawCircleLines(Image *dst, int centerX, int centerY, int radius, Color color);          // Draw circle outline within an image
 RLAPI void ImageDrawCircleLinesV(Image *dst, Vector2 center, int radius, Color color);                   // Draw circle outline within an image (Vector version)
-RLAPI void ImageDrawRectangle(Image *dst, int posX, int posY, int width, int height, Color color);       // Draw rectangle within an image
+RLAPI void ImageDrawRectangle(Image *dst, int posX, int posY, int largura, int altura, Color color);       // Draw rectangle within an image
 RLAPI void ImageDrawRectangleV(Image *dst, Vector2 position, Vector2 size, Color color);                 // Draw rectangle within an image (Vector version)
 RLAPI void ImageDrawRectangleRec(Image *dst, Rectangle rec, Color color);                                // Draw rectangle within an image
 RLAPI void ImageDrawRectangleLines(Image *dst, Rectangle rec, int thick, Color color);                   // Draw rectangle lines within an image
@@ -1426,7 +1426,7 @@ RLAPI void ImageDrawTextEx(Image *dst, Font font, const char *text, Vector2 posi
 RLAPI Texture2D LoadTexture(const char *fileName);                                                       // Load texture from file into GPU memory (VRAM)
 RLAPI Texture2D LoadTextureFromImage(Image image);                                                       // Load texture from image data
 RLAPI TextureCubemap LoadTextureCubemap(Image image, int layout);                                        // Load cubemap from image, multiple image cubemap layouts supported
-RLAPI RenderTexture2D LoadRenderTexture(int width, int height);                                          // Load texture for rendering (framebuffer)
+RLAPI RenderTexture2D LoadRenderTexture(int largura, int altura);                                          // Load texture for rendering (framebuffer)
 RLAPI bool IsTextureValid(Texture2D texture);                                                            // Check if a texture is valid (loaded in GPU)
 RLAPI void UnloadTexture(Texture2D texture);                                                             // Unload texture from GPU memory (VRAM)
 RLAPI bool IsRenderTextureValid(RenderTexture2D target);                                                 // Check if a render texture is valid (loaded in GPU)
@@ -1464,7 +1464,7 @@ RLAPI Color ColorLerp(Color color1, Color color2, float factor);            // G
 RLAPI Color GetColor(unsigned int hexValue);                                // Get Color structure from hexadecimal value
 RLAPI Color GetPixelColor(void *srcPtr, int format);                        // Get Color from a source pixel pointer of certain format
 RLAPI void SetPixelColor(void *dstPtr, Color color, int format);            // Set color formatted into destination pixel pointer
-RLAPI int GetPixelDataSize(int width, int height, int format);              // Get pixel data size in bytes for certain format
+RLAPI int GetPixelDataSize(int largura, int altura, int format);              // Get pixel data size in bytes for certain format
 
 //------------------------------------------------------------------------------------
 // Font Loading and Text Drawing Functions (Module: text)
@@ -1547,16 +1547,16 @@ RLAPI void DrawPoint3D(Vector3 position, Color color);                          
 RLAPI void DrawCircle3D(Vector3 center, float radius, Vector3 rotationAxis, float rotationAngle, Color color); // Draw a circle in 3D world space
 RLAPI void DrawTriangle3D(Vector3 v1, Vector3 v2, Vector3 v3, Color color);                              // Draw a color-filled triangle (vertex in counter-clockwise order!)
 RLAPI void DrawTriangleStrip3D(const Vector3 *points, int pointCount, Color color);                      // Draw a triangle strip defined by points
-RLAPI void DrawCube(Vector3 position, float width, float height, float length, Color color);             // Draw cube
+RLAPI void DrawCube(Vector3 position, float largura, float altura, float length, Color color);             // Draw cube
 RLAPI void DrawCubeV(Vector3 position, Vector3 size, Color color);                                       // Draw cube (Vector version)
-RLAPI void DrawCubeWires(Vector3 position, float width, float height, float length, Color color);        // Draw cube wires
+RLAPI void DrawCubeWires(Vector3 position, float largura, float altura, float length, Color color);        // Draw cube wires
 RLAPI void DrawCubeWiresV(Vector3 position, Vector3 size, Color color);                                  // Draw cube wires (Vector version)
 RLAPI void DrawSphere(Vector3 centerPos, float radius, Color color);                                     // Draw sphere
 RLAPI void DrawSphereEx(Vector3 centerPos, float radius, int rings, int slices, Color color);            // Draw sphere with extended parameters
 RLAPI void DrawSphereWires(Vector3 centerPos, float radius, int rings, int slices, Color color);         // Draw sphere wires
-RLAPI void DrawCylinder(Vector3 position, float radiusTop, float radiusBottom, float height, int slices, Color color); // Draw a cylinder/cone
+RLAPI void DrawCylinder(Vector3 position, float radiusTop, float radiusBottom, float altura, int slices, Color color); // Draw a cylinder/cone
 RLAPI void DrawCylinderEx(Vector3 startPos, Vector3 endPos, float startRadius, float endRadius, int sides, Color color); // Draw a cylinder with base at startPos and top at endPos
-RLAPI void DrawCylinderWires(Vector3 position, float radiusTop, float radiusBottom, float height, int slices, Color color); // Draw a cylinder/cone wires
+RLAPI void DrawCylinderWires(Vector3 position, float radiusTop, float radiusBottom, float altura, int slices, Color color); // Draw a cylinder/cone wires
 RLAPI void DrawCylinderWiresEx(Vector3 startPos, Vector3 endPos, float startRadius, float endRadius, int sides, Color color); // Draw a cylinder wires with base at startPos and top at endPos
 RLAPI void DrawCapsule(Vector3 startPos, Vector3 endPos, float radius, int slices, int rings, Color color); // Draw a capsule with the center of its sphere caps at startPos and endPos
 RLAPI void DrawCapsuleWires(Vector3 startPos, Vector3 endPos, float radius, int slices, int rings, Color color); // Draw capsule wireframe with the center of its sphere caps at startPos and endPos
@@ -1600,12 +1600,12 @@ RLAPI bool ExportMeshAsCode(Mesh mesh, const char *fileName);                   
 
 // Mesh generation functions
 RLAPI Mesh GenMeshPoly(int sides, float radius);                                            // Generate polygonal mesh
-RLAPI Mesh GenMeshPlane(float width, float length, int resX, int resZ);                     // Generate plane mesh (with subdivisions)
-RLAPI Mesh GenMeshCube(float width, float height, float length);                            // Generate cuboid mesh
+RLAPI Mesh GenMeshPlane(float largura, float length, int resX, int resZ);                     // Generate plane mesh (with subdivisions)
+RLAPI Mesh GenMeshCube(float largura, float altura, float length);                            // Generate cuboid mesh
 RLAPI Mesh GenMeshSphere(float radius, int rings, int slices);                              // Generate sphere mesh (standard sphere)
 RLAPI Mesh GenMeshHemiSphere(float radius, int rings, int slices);                          // Generate half-sphere mesh (no bottom cap)
-RLAPI Mesh GenMeshCylinder(float radius, float height, int slices);                         // Generate cylinder mesh
-RLAPI Mesh GenMeshCone(float radius, float height, int slices);                             // Generate cone/pyramid mesh
+RLAPI Mesh GenMeshCylinder(float radius, float altura, int slices);                         // Generate cylinder mesh
+RLAPI Mesh GenMeshCone(float radius, float altura, int slices);                             // Generate cone/pyramid mesh
 RLAPI Mesh GenMeshTorus(float radius, float size, int radSeg, int sides);                   // Generate torus mesh
 RLAPI Mesh GenMeshKnot(float radius, float size, int radSeg, int sides);                    // Generate trefoil knot mesh
 RLAPI Mesh GenMeshHeightmap(Image heightmap, Vector3 size);                                 // Generate heightmap mesh from image data
