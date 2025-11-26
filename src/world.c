@@ -48,16 +48,16 @@ void criarmundo(Mundo *m, int largura, int altura, float tamanho) {
             if (r.temcarro) {
                 if (GetRandomValue(0, 1) == 0) {
                     r.posicaocarroX = -tamanho * (float)GetRandomValue(2, 4);
-                    r.velocidade = (float)GetRandomValue(200, 250);
+                    r.velocidade = (float)GetRandomValue(300, 500);
                 } else {
                     r.posicaocarroX = (float)largura + tamanho * (float)GetRandomValue(2, 4);
-                    r.velocidade = -(float)GetRandomValue(200, 250);
+                    r.velocidade = -(float)GetRandomValue(300, 500);
                 }
                 r.contagemcarros = GetRandomValue(1, 3);
                 r.espacoentrecarros = (float)GetRandomValue(300, 500);
                 
-                if (r.espacoentrecarros < m->tamanho * 2.5f) {
-                    r.espacoentrecarros = m->tamanho * 2.5f;
+                if (r.espacoentrecarros < m->tamanho * 4.5f) {
+                    r.espacoentrecarros = m->tamanho * 4.5f;
                 }
                 
                 for (int c = r.contagemcarros - 1; c >= 0; c--) {

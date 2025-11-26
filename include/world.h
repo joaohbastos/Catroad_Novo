@@ -3,7 +3,7 @@
 
 #include "raylib.h"
 
-#define MAXFAIXAS 100
+#define MAXFAIXAS 350
 
 typedef struct Carro {
     int indice;
