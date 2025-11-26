@@ -39,8 +39,17 @@ O jogo suporta teclado para movimentação e controle de fluxo:
 | **Reiniciar Jogo** | R | - |
 | **Sair** | ESC | - |
 
+# Screencast Explicativo
+
+* **Segue o link do vídeo** (https://youtu.be/2E7nY5W1aSo).
+
 ## 🚀 Como Executar
 
-### Pré-requisitos
 1.  Um compilador C (ex: GCC, Clang).
 2.  A biblioteca **raylib** instalada e configurada no seu ambiente de desenvolvimento.
+
+## Participantes
+
+1. Lucca Albuquerque Dangelo
+2. Gabriel Pereira Lima
+3. João Henrique Bastos Washington
