@@ -1,6 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 #include <stdbool.h>
+#include "raylib.h"
 #define GATO 1
 
 typedef struct {

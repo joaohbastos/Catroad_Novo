@@ -1,5 +1,7 @@
 #ifndef WORLD_H
 #define WORLD_H
+#include <raylib.h>
+#include <stdbool.h>
 #define MAXFAIXAS 350
 
 typedef struct Carro {

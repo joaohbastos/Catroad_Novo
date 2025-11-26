@@ -1,5 +1,5 @@
-#include "player.h"
 #include "raylib.h"
+#include "player.h"
 #include <stdio.h>
 #include <stdlib.h>
 
