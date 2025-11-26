@@ -13,6 +13,7 @@ O jogo opera contra o relógio: você tem **35 segundos** para avançar o máxim
 * **Tempo:** O cronômetro inicia em 35 segundos. Se o tempo acabar, é fim de jogo.
 * **Pontuação:** Cada passo para frente (nova faixa alcançada) = +1 ponto no score.
 * **Colisão:** Se o gato for atingido por um carro, é Game Over imediato.
+* **Radar de Segurança:** O jogo conta com um sistema de varredura (matriz 3x3) que identifica o entorno do jogador, indicando onde é seguro pisar e onde há carros.
 * **Dificuldade:** Quanto mais longe você vai, mais rápidos os carros ficam (até o limite de 3x).
 * **Recorde:** O jogo salva automaticamente a sua maior distância alcançada.
 
@@ -21,7 +22,7 @@ O jogo opera contra o relógio: você tem **35 segundos** para avançar o máxim
 Este projeto demonstra o domínio de conceitos fundamentais e complexos da linguagem C aplicados ao desenvolvimento de jogos:
 
 * **Lista Encadeada:** Estrutura de dados central para gerenciar os obstáculos (carros). Como os veículos entram e saem da tela constantemente, a lista encadeada permite a inserção e remoção dinâmica e eficiente dos nós.
-* **Matriz:** Utilizada para a lógica do mapa, renderização do asfalto e cálculo de posições na grade.
+* **Matriz:** Utilizada para a lógica do mapa, renderização do asfalto e para a implementação técnica do **Radar 3x3** de detecção.
 * **Structs:** Definição das entidades do jogo (o Jogador/Gato e os Inimigos/Carros) para organizar seus atributos (posição X/Y, velocidade, hitbox, tipo).
 * **Ponteiros e Alocação Dinâmica (malloc):** Gerenciamento manual da memória, essencial para o funcionamento da lista encadeada e otimização de recursos durante a execução.
 * **Manipulação de Arquivos:** Sistema de persistência que lê e escreve o recorde (High Score) em um arquivo externo, mantendo os dados mesmo após fechar o jogo.
