@@ -42,7 +42,7 @@ O jogo suporta teclado para movimentação e controle de fluxo:
 
 # Screencast Explicativo
 
-* **Segue o link do vídeo** (https://youtu.be/2E7nY5W1aSo).
+* **Segue o link do vídeo** (https://youtu.be/6bdll7h0F3Q).
 
 ## 🚀 Como Executar
 
