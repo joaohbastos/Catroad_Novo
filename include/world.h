@@ -1,8 +1,5 @@
 #ifndef WORLD_H
 #define WORLD_H
-
-#include "raylib.h"
-
 #define MAXFAIXAS 350
 
 typedef struct Carro {
@@ -24,20 +21,16 @@ typedef struct {
     float velocidade;
     float espacoentrecarros;
     Color cor;
-
     Carro *listaCarros;
 } Rua;
 
 typedef struct {
     Rua *faixas;
-
     int quantidadelinhas;
     int capacidade;  
-
     float tamanho;
     float dificuldadeatual;
-
-    int **mapaTerreno;
+    int **mapa;
     int colunasMatriz;
 } Mundo;
 

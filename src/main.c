@@ -2,7 +2,6 @@
 
 int main(void) {
     iniciarjogo();
-
     while (!fechar_jogo()) { 
         atualizarjogo();
         desenharcenario();
