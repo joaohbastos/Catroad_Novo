@@ -37,7 +37,7 @@ void NovoJogo(void) {
 }
 
 void iniciarjogo(void) {
-    InitWindow(LARGURA_TELA, ALTURA_TELA, "CatRoad - Radar Edition");
+    InitWindow(LARGURA_TELA, ALTURA_TELA, "CatRoad");
     SetTargetFPS(60);
     SetRandomSeed((unsigned int)GetTime());
     recorde = carregar_recorde();
